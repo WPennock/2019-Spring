@@ -60,7 +60,66 @@ C_CS_Min = C_C*Q/(ts.Q6_roller(ID_C)*ts.max_rpm)
 C_CS_Min.to(u.g/u.L)
 
 C_CS = 100*u.g/u.L
+
+def Q_Stock(C, Q_plant, C_stock):
+    """This function calculates the flow of the stock based on the required concentration, the flow of the plant, and the concentration of the stock.
+
+    Parameters
+    ------------
+    Q_plant : float
+        flow rate of the plant
+    C : float
+        desired concentration within the plant
+    C_stock: float
+        concentration of the stock
+
+    Returns
+    ----------    
+    float
+        Required flow rate from the stock to achieve the specified concentration at the specified flow rate, given the concentration of the stock.
+
+    Examples
+    ----------    
+    >>> from aguaclara.play import*
+    >>> Q_Stock(5*u.mg/u.L,1*u.L/u.s,500*u.mg/u.L)
+    <Quantity(600.0, 'milliliter / minute')>
+    """
+    return (Q_plant*C/C_stock).to(u.mL/u.min)
+
+def T_Stock(C, Q_plant, C_stock, V_stock):
+    """ This function calculates the time it will take for a stock to run out based on the desired concentration, the flow rate of the plant, the concentration of the stock, and the volume of the stock.
+
+    Parameters
+    ------------
+    Q_plant : float
+        flow rate of the plant
+    C : float
+        desired concentration within the plant
+    C_stock: float
+        concentration of the stock
+    V_stock: float
+        volume of the stock tank
+
+    Returns
+    ----------    
+    float
+        Time until stock runs out
+
+    Examples
+    ----------    
+    >>> from aguaclara.play import*
+    >>> T_Stock(5*u.mg/u.L,1*u.L/u.s,500*u.mg/u.L,20*u.L)
+    <Quantity(33.333333333333336, 'minute')>
+    """
+    return (V_stock/Q_Stock(5*u.mg/u.L,1*u.L/u.s,500*u.mg/u.L)).to(u.min)
+
+def rpm_pump(Q_stock, mL_rev):
+    """This 
+    """
+
 T_CS = ts.T_stock(Q,C_C,)
+
+
 ```
 
 ## Example code from Fluoride Auto
