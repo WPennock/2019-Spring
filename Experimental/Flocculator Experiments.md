@@ -104,12 +104,33 @@ def C_range(Q_plant,C,mL_rev):
     >>> C_range(0.1*u.L/u.s,50*u.mg/u.L,0.10*u.mL/u.rev)
     <Quantity([  31.57894737 1000.        ], 'gram / liter')>
     """
-    # pdb.set_trace()
-    mini = (((Q_plant*C)/(ts.max_rpm*mL_rev)).to(u.g/u.L)).magnitude
-    maxi = (((Q_plant*C)/(ts.min_rpm*mL_rev)).to(u.g/u.L)).magnitude
-    range = [mini, maxi]
-    return np.array(range)*u.g/u.L
+    if type(C.magnitude) == np.ndarray:
+      # pdb.set_trace()
+      spread = np.zeros((len(C),2))
+      for i in range(0,len(C)):
+        spread[i,0] = (((Q_plant*C[i])/(ts.max_rpm*mL_rev)).to(u.g/u.L)).magnitude
+        spread[i,1] = (((Q_plant*C[i])/(ts.min_rpm*mL_rev)).to(u.g/u.L)).magnitude
+    else:
+      mini = (((Q_plant*C)/(ts.max_rpm*mL_rev)).to(u.g/u.L)).magnitude
+      maxi = (((Q_plant*C)/(ts.min_rpm*mL_rev)).to(u.g/u.L)).magnitude
+      spread = [mini, maxi]
+    return np.array(spread)*u.g/u.L
+C_test = np.array([2,5,10])*u.mg/u.L    
 C_range(0.1*u.L/u.s,50*u.mg/u.L,0.10*u.mL/u.rev)    
+C_range(0.1*u.L/u.s,C_test,0.10*u.mL/u.rev)
+xf = np.zeros((3,2))
+xf
+xf[0,1] = 5
+xf
+type(50*u.mg/u.L)
+type(np.array([50,100,200])*u.mg/u.L)
+type(2.13)
+xy = np.arange(10)
+xy
+xy.shape = (2,5)
+xy
+xy[1,3]
+
 ```
 
 ## SWAT Pump
