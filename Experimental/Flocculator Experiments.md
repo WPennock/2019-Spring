@@ -5,6 +5,7 @@
 from aguaclara.play import *
 u.define('rev = 1 * revolutions')
 import aguaclara.research.tube_sizing as ts
+import aguaclara.research.floc_model as floc
 import doctest
 import pdb
 ```
@@ -128,12 +129,14 @@ A_S = np.pi*D_S**2/4
 V_S = A_S*L_S
 T_S = V_S/Q_S
 T_S.to(u.min)
+
+# Need to add residence time of top of settler to turbidity meter.
 ```
 
 ## Experiment Design
 Assuming that experiments will be conducted at a single coagulant dose for all capture velocities (0.1, 0.2, 0.3, 0.4, 0.5) mm/s, the total residence time should be at least two flocculator residence times plus double each SWaT residence time.
 ```python
-T_tot = (2*T + 2*np.sum(T_S)).to(u.min)
+T_tot = (2*T + 4*np.sum(T_S)).to(u.min)
 T_tot
 ```
 
@@ -163,12 +166,19 @@ T_CS.to(u.hr)
 ## PACl Pump
 ```python
 # Constants
-C_P = 50*u.NTU
-ID_P = 2.79*u.mm
-V_PS =
+Gammas = np.array([0.0,0.1,0.2,0.3,0.4,0.5])
+C_P = np.zeros(len(Gammas))
+for i in range(0,len(Gammas)):
+  C_P[i]=0
+  while np.abs(floc.gamma_coag(C_C,(C_P[i]*u.mg/u.L),floc.PACl,floc.Clay,D,floc.RATIO_HEIGHT_DIAM)-Gammas[i])>0.001:
+    C_P[i]=C_P[i]+0.01
+floc.gamma_coag(C_C,(C_P*u.mg/u.L),floc.PACl,floc.Clay,D,floc.RATIO_HEIGHT_DIAM)  
+C_PSS = 70.6*u.g/u.L # Super stock concentration
+ID_P = 1.52*u.mm
+V_PS = 1*u.L
 
 # Calculations
-mL_rev_nom_C = ts.Q6_roller(ID_C)
+mL_rev_nom_P = ts.Q6_roller(ID_P)
 
 C_CS_range = C_range(Q,C_C,mL_rev_nom_C)
 C_CS_range
