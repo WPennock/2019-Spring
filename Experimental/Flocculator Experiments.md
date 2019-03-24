@@ -118,19 +118,6 @@ def C_range(Q_plant,C,mL_rev):
 C_test = np.array([2,5,10])*u.mg/u.L    
 C_range(0.1*u.L/u.s,50*u.mg/u.L,0.10*u.mL/u.rev)    
 C_range(0.1*u.L/u.s,C_test,0.10*u.mL/u.rev)
-xf = np.zeros((3,2))
-xf
-xf[0,1] = 5
-xf
-type(50*u.mg/u.L)
-type(np.array([50,100,200])*u.mg/u.L)
-type(2.13)
-xy = np.arange(10)
-xy
-xy.shape = (2,5)
-xy
-xy[1,3]
-
 ```
 
 ## SWAT Pump
@@ -193,7 +180,8 @@ for i in range(0,len(Gammas)):
   C_P[i]=0
   while np.abs(floc.gamma_coag(C_C,(C_P[i]*u.mg/u.L),floc.PACl,floc.Clay,D,floc.RATIO_HEIGHT_DIAM)-Gammas[i])>0.001:
     C_P[i]=C_P[i]+0.01
-floc.gamma_coag(C_C,(C_P*u.mg/u.L),floc.PACl,floc.Clay,D,floc.RATIO_HEIGHT_DIAM)  
+C_P = C_P*u.mg/u.L    
+floc.gamma_coag(C_C,C_P,floc.PACl,floc.Clay,D,floc.RATIO_HEIGHT_DIAM)  
 C_PSS = 70.6*u.g/u.L # Super stock concentration
 ID_P = 1.52*u.mm
 V_PS = 1*u.L
@@ -201,38 +189,32 @@ V_PS = 1*u.L
 # Calculations
 mL_rev_nom_P = ts.Q6_roller(ID_P)
 
-C_CS_range = C_range(Q,C_C,mL_rev_nom_C)
-C_CS_range
+C_CP_range = C_range(Q,C_P,mL_rev_nom_P)
+C_CP_range.magnitude
 
-C_CS = 200*u.g/u.L
-Q_CS = Q_Stock(C_C,Q,C_CS)
-Q_CS
-rpm_CS = rpm_pump(Q_CS,mL_rev_nom_C)
-rpm_CS
+C_PS = 1*u.g/u.L
+Q_PS = Q_Stock(C_P,Q,C_PS)
+Q_PS
+rpm_PS = rpm_pump(Q_PS,mL_rev_nom_P)
+rpm_PS
 
-T_CS = T_Stock(C_C,Q,C_CS,V_CS)
-
+T_PS = T_Stock(C_P,Q,C_PS,V_PS)
+T_PS
 ```
-
-## Example code from Fluoride Auto
+## Base Pump
 ```python
-#Given: flow rate of system, pump speed from stock, concentration of stock
-#Find: system concentration
-
-#Q_sys * C_sys = Q_stock * C_stock
-
-pump_speed = 30*(u.rpm)
-orange_yellow = 0.019*(u.milliliter/u.revolutions)
-oy_flowrate = orange_yellow.to(u.milliliter/u.revolutions)*(pump_speed).to(u.revolutions/u.s)
-
-Q_sys = 0.7601 * (u.mL/u.s)
-C_stock = 2400 * (u.mg/u.L)
-C_sys = 10 * (u.mg/u.L)
-
-
-Q_stock = (Q_sys * C_sys)/C_stock
-Q_stock_rpm = Q_stock *
+# Compensating for PACl
+n_PACl = 1.77/u.L # Normality of PACl
+n_NaOH = 1/u.L
+eqv_PACl_m = n_PACl/C_PSS
+eqv_PACl_v = C_PSS*eqv_PACl_m
+eqv_PACl_v
+V_BS = 1*u.L
+MW_NaOH = 40*u.g
+m_B = MW_NaOH*V_BS*eqv_PACl_v
+m_B
 ```
+
 ##Doctest
 ```python
 doctest.testmod(verbose=True)
