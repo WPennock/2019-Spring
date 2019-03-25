@@ -133,7 +133,7 @@ T_S.to(u.min)
 ## Experiment Design
 Assuming that experiments will be conducted at a single coagulant dose for all capture velocities (0.1, 0.2, 0.3, 0.4, 0.5) mm/s, the total residence time should be at least two flocculator residence times plus double each SWaT residence time.
 ```python
-T_tot = (2*T + 2*np.sum(T_S)).to(u.min)
+T_tot = (2*T + 4*np.sum(T_S)).to(u.min)
 T_tot
 ```
 
@@ -163,12 +163,12 @@ T_CS.to(u.hr)
 ## PACl Pump
 ```python
 # Constants
-C_P = 50*u.NTU
+C_P = np.array([])
 ID_P = 2.79*u.mm
 V_PS =
 
 # Calculations
-mL_rev_nom_C = ts.Q6_roller(ID_C)
+mL_rev_nom_C = ts.Q6_roller(ID_P)
 
 C_CS_range = C_range(Q,C_C,mL_rev_nom_C)
 C_CS_range
