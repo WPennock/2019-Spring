@@ -5,6 +5,7 @@
 from aguaclara.play import *
 u.define('rev = 1 * revolutions')
 import aguaclara.research.tube_sizing as ts
+import aguaclara.research.floc_model as floc
 import doctest
 import pdb
 ```
@@ -103,12 +104,20 @@ def C_range(Q_plant,C,mL_rev):
     >>> C_range(0.1*u.L/u.s,50*u.mg/u.L,0.10*u.mL/u.rev)
     <Quantity([  31.57894737 1000.        ], 'gram / liter')>
     """
-    # pdb.set_trace()
-    mini = (((Q_plant*C)/(ts.max_rpm*mL_rev)).to(u.g/u.L)).magnitude
-    maxi = (((Q_plant*C)/(ts.min_rpm*mL_rev)).to(u.g/u.L)).magnitude
-    range = [mini, maxi]
-    return np.array(range)*u.g/u.L
+    if type(C.magnitude) == np.ndarray:
+      # pdb.set_trace()
+      spread = np.zeros((len(C),2))
+      for i in range(0,len(C)):
+        spread[i,0] = (((Q_plant*C[i])/(ts.max_rpm*mL_rev)).to(u.g/u.L)).magnitude
+        spread[i,1] = (((Q_plant*C[i])/(ts.min_rpm*mL_rev)).to(u.g/u.L)).magnitude
+    else:
+      mini = (((Q_plant*C)/(ts.max_rpm*mL_rev)).to(u.g/u.L)).magnitude
+      maxi = (((Q_plant*C)/(ts.min_rpm*mL_rev)).to(u.g/u.L)).magnitude
+      spread = [mini, maxi]
+    return np.array(spread)*u.g/u.L
+C_test = np.array([2,5,10])*u.mg/u.L    
 C_range(0.1*u.L/u.s,50*u.mg/u.L,0.10*u.mL/u.rev)    
+C_range(0.1*u.L/u.s,C_test,0.10*u.mL/u.rev)
 ```
 
 ## SWAT Pump
@@ -128,6 +137,8 @@ A_S = np.pi*D_S**2/4
 V_S = A_S*L_S
 T_S = V_S/Q_S
 T_S.to(u.min)
+
+# Need to add residence time of top of settler to turbidity meter.
 ```
 
 ## Experiment Design
@@ -163,45 +174,47 @@ T_CS.to(u.hr)
 ## PACl Pump
 ```python
 # Constants
-C_P = np.array([])
-ID_P = 2.79*u.mm
-V_PS =
+Gammas = np.array([0.0,0.1,0.2,0.3,0.4,0.5])
+C_P = np.zeros(len(Gammas))
+for i in range(0,len(Gammas)):
+  C_P[i]=0
+  while np.abs(floc.gamma_coag(C_C,(C_P[i]*u.mg/u.L),floc.PACl,floc.Clay,D,floc.RATIO_HEIGHT_DIAM)-Gammas[i])>0.001:
+    C_P[i]=C_P[i]+0.01
+C_P = C_P*u.mg/u.L    
+floc.gamma_coag(C_C,C_P,floc.PACl,floc.Clay,D,floc.RATIO_HEIGHT_DIAM)  
+C_PSS = 70.6*u.g/u.L # Super stock concentration
+ID_P = 1.52*u.mm
+V_PS = 1*u.L
 
 # Calculations
-mL_rev_nom_C = ts.Q6_roller(ID_P)
+mL_rev_nom_P = ts.Q6_roller(ID_P)
 
-C_CS_range = C_range(Q,C_C,mL_rev_nom_C)
-C_CS_range
+C_CP_range = C_range(Q,C_P,mL_rev_nom_P)
+C_CP_range.magnitude
 
-C_CS = 200*u.g/u.L
-Q_CS = Q_Stock(C_C,Q,C_CS)
-Q_CS
-rpm_CS = rpm_pump(Q_CS,mL_rev_nom_C)
-rpm_CS
+C_PS = 1*u.g/u.L
+Q_PS = Q_Stock(C_P,Q,C_PS)
+Q_PS
+rpm_PS = rpm_pump(Q_PS,mL_rev_nom_P)
+rpm_PS
 
-T_CS = T_Stock(C_C,Q,C_CS,V_CS)
-
+T_PS = T_Stock(C_P,Q,C_PS,V_PS)
+T_PS
 ```
-
-## Example code from Fluoride Auto
+## Base Pump
 ```python
-#Given: flow rate of system, pump speed from stock, concentration of stock
-#Find: system concentration
-
-#Q_sys * C_sys = Q_stock * C_stock
-
-pump_speed = 30*(u.rpm)
-orange_yellow = 0.019*(u.milliliter/u.revolutions)
-oy_flowrate = orange_yellow.to(u.milliliter/u.revolutions)*(pump_speed).to(u.revolutions/u.s)
-
-Q_sys = 0.7601 * (u.mL/u.s)
-C_stock = 2400 * (u.mg/u.L)
-C_sys = 10 * (u.mg/u.L)
-
-
-Q_stock = (Q_sys * C_sys)/C_stock
-Q_stock_rpm = Q_stock *
+# Compensating for PACl
+n_PACl = 1.77/u.L # Normality of PACl
+n_NaOH = 1/u.L
+eqv_PACl_m = n_PACl/C_PSS
+eqv_PACl_v = C_PSS*eqv_PACl_m
+eqv_PACl_v
+V_BS = 1*u.L
+MW_NaOH = 40*u.g
+m_B = MW_NaOH*V_BS*eqv_PACl_v
+m_B
 ```
+
 ##Doctest
 ```python
 doctest.testmod(verbose=True)
