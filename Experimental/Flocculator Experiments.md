@@ -204,13 +204,13 @@ T_PS
 ## Base Pump
 ```python
 # Compensating for PACl
-n_PACl = 1.77/u.L # Normality of PACl
-n_NaOH = 1/u.L
-eqv_PACl_m = n_PACl/C_PSS
-eqv_PACl_v = C_PSS*eqv_PACl_m
+n_PACl = 1.77/u.L # Normality of PACl, eqv/L
+n_NaOH = 1/u.L # Normality of NaOH, eqv/L
+eqv_PACl_m = n_PACl/C_PSS # equivalence of PACl by mass, eqv/g
+eqv_PACl_v = C_PSS*eqv_PACl_m # equpivalence of PACl by volume, eqv/L
 eqv_PACl_v
-V_BS = 1*u.L
-MW_NaOH = 40*u.g
+V_BS = 1*u.L # Volume of base stock
+MW_NaOH = 40*u.g # Molecular weight of NaOH
 m_B = MW_NaOH*V_BS*eqv_PACl_v
 m_B
 ```
