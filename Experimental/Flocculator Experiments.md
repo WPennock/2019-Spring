@@ -8,6 +8,7 @@ import aguaclara.research.tube_sizing as ts
 import aguaclara.research.floc_model as floc
 import doctest
 import pdb
+import chempy 
 ```
 
 ## System Constants
@@ -162,6 +163,7 @@ C_CS_range = C_range(Q,C_C,mL_rev_nom_C)
 C_CS_range
 
 C_CS = 50*u.g/u.L
+m_CS = V_CS*C_CS
 Q_CS = Q_Stock(C_C,Q,C_CS)
 Q_CS
 rpm_CS = rpm_pump(Q_CS,mL_rev_nom_C)
@@ -193,6 +195,8 @@ C_CP_range = C_range(Q,C_P,mL_rev_nom_P)
 C_CP_range.magnitude
 
 C_PS = 1*u.g/u.L
+V_PSS = C_PS*V_PS/C_PSS
+V_PSS.to(u.mL)
 Q_PS = Q_Stock(C_P,Q,C_PS)
 Q_PS
 rpm_PS = rpm_pump(Q_PS,mL_rev_nom_P)
@@ -213,6 +217,10 @@ V_BS = 1*u.L # Volume of base stock
 MW_NaOH = 40*u.g # Molecular weight of NaOH
 m_B = MW_NaOH*V_BS*eqv_PACl_v
 m_B
+
+# Compensating for Alkalinity
+T_Alk = 117*u.mg/u.L # as CaCO3 from AWQR 2018
+
 ```
 
 ##Doctest
