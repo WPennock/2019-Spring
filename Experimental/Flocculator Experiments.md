@@ -204,15 +204,61 @@ T_PS
 ## Base Pump
 ```python
 # Compensating for PACl
-n_PACl = 1.77/u.L # Normality of PACl, eqv/L
-n_NaOH = 1/u.L # Normality of NaOH, eqv/L
+n_PACl = 1.77*u.eq/u.L # Normality of PACl, eqv/L
+n_NaOH = 1*u.eq/u.L # Normality of NaOH, eqv/L
 eqv_PACl_m = n_PACl/C_PSS # equivalence of PACl by mass, eqv/g
 eqv_PACl_v = C_PSS*eqv_PACl_m # equpivalence of PACl by volume, eqv/L
 eqv_PACl_v
 V_BS = 1*u.L # Volume of base stock
-MW_NaOH = 40*u.g # Molecular weight of NaOH
+MW_NaOH = 40*u.g/u.mol # Molecular weight of NaOH
 m_B = MW_NaOH*V_BS*eqv_PACl_v
-m_B
+m_B.to(u.g)
+
+# Acid Neutralizing Capacity
+T_Alk = 2.8E-3*u.mol/u.L # eqv/L
+pH = 7.67
+
+def M_OH(pH):
+    """This function calculates the molarity of OH from the pH.
+    Parameters
+    ----------
+    pH : float
+        pH to be inverted
+    Returns
+    -------
+    The molarity of OH (in moles per liter) of the given pH
+    Examples
+    --------
+    >>> M_OH(8.25)
+    1.778279410038923e-06 mole/liter
+    >>> M_OH(10)
+    1e-4 mole/liter
+    """
+    return 10**(pH-14)*u.mol/u.L
+
+def Total_Carbonates(pH, Total_Alkalinity):
+    """Total carbonates (C_T) calculated from pH and total alkalinity.
+    Parameters
+    ----------
+    pH : float
+        pH of the system
+    Total_Alkalinity: float
+        total alkalinity of the system
+
+    Returns
+    -------
+    total carbonates in the system (mole/L)
+
+    Examples
+    --------
+    >>> Total_Carbonates(8.25, 1*u.mol/u.L)
+    0.9968913136948984 equivalents/liter
+    >>> Total_Carbonates(10, 1*u.mol/u.L)
+    1.359830978063728 equivalents/liter
+    """
+    return (Total_Carbonates * (u.eq/u.mol * alpha1_carbonate(pH) +
+            2 * u.eq/u.mol * alpha2_carbonate(pH)) +
+1 * u.eq/u.mol * Kw/invpH(pH) - 1 * u.eq/u.mol * invpH(pH))
 ```
 
 ##Doctest
