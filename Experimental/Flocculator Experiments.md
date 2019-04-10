@@ -4,11 +4,12 @@
 ```python
 from aguaclara.play import *
 u.define('rev = 1 * revolutions')
-import aguaclara.research.tube_sizing as ts
+import aguaclara.research.peristaltic_pump as pump
 import aguaclara.research.floc_model as floc
+import aguaclara.research.stock_qc as stock
+import aguaclara.research.environmental_processes_analysis as epa
 import doctest
 import pdb
-import chempy 
 ```
 
 ## System Constants
@@ -24,6 +25,9 @@ T.to(u.min)
 ```
 ## New Functions
 ```python
+max_rpm = 100*u.rev/u.min
+min_rpm = 3*u.rev/u.min
+
 def Q_SWAT(v_c,D,L,angle):
     """This function takes the desired capture velocity, diameter of the tube settler, length of the tube settler, and its angle with respect to the horizon to give a needed flow rate through the tube settler.
     >>> from aguaclara.play import*
@@ -109,11 +113,11 @@ def C_range(Q_plant,C,mL_rev):
       # pdb.set_trace()
       spread = np.zeros((len(C),2))
       for i in range(0,len(C)):
-        spread[i,0] = (((Q_plant*C[i])/(ts.max_rpm*mL_rev)).to(u.g/u.L)).magnitude
-        spread[i,1] = (((Q_plant*C[i])/(ts.min_rpm*mL_rev)).to(u.g/u.L)).magnitude
+        spread[i,0] = (((Q_plant*C[i])/(max_rpm*mL_rev)).to(u.g/u.L)).magnitude
+        spread[i,1] = (((Q_plant*C[i])/(min_rpm*mL_rev)).to(u.g/u.L)).magnitude
     else:
-      mini = (((Q_plant*C)/(ts.max_rpm*mL_rev)).to(u.g/u.L)).magnitude
-      maxi = (((Q_plant*C)/(ts.min_rpm*mL_rev)).to(u.g/u.L)).magnitude
+      mini = (((Q_plant*C)/(max_rpm*mL_rev)).to(u.g/u.L)).magnitude
+      maxi = (((Q_plant*C)/(min_rpm*mL_rev)).to(u.g/u.L)).magnitude
       spread = [mini, maxi]
     return np.array(spread)*u.g/u.L
 C_test = np.array([2,5,10])*u.mg/u.L    
@@ -157,7 +161,7 @@ ID_C = 2.79*u.mm # Nominal inner diameter of clay pump tubing
 V_CS = 4*u.L # Volume of clay stock
 
 # Calculations
-mL_rev_nom_C = ts.Q6_roller(ID_C)
+mL_rev_nom_C = pump.vol_per_rev_3_stop(inner_diameter=ID_C)
 
 C_CS_range = C_range(Q,C_C,mL_rev_nom_C)
 C_CS_range
@@ -189,7 +193,7 @@ ID_P = 1.52*u.mm
 V_PS = 1*u.L
 
 # Calculations
-mL_rev_nom_P = ts.Q6_roller(ID_P)
+mL_rev_nom_P = pump.vol_per_rev_3_stop(inner_diameter=ID_P)
 
 C_CP_range = C_range(Q,C_P,mL_rev_nom_P)
 C_CP_range.magnitude
@@ -208,7 +212,7 @@ T_PS
 ## Base Pump
 ```python
 # Compensating for PACl
-n_PACl = 1.77*u.eq/u.L # Normality of PACl, eqv/L
+n_PACl = 1.77*u.equivalents/u.L # Normality of PACl, eqv/L
 n_NaOH = 1*u.eq/u.L # Normality of NaOH, eqv/L
 eqv_PACl_m = n_PACl/C_PSS # equivalence of PACl by mass, eqv/g
 eqv_PACl_v = C_PSS*eqv_PACl_m # equpivalence of PACl by volume, eqv/L
@@ -216,18 +220,13 @@ eqv_PACl_v
 V_BS = 1*u.L # Volume of base stock
 MW_NaOH = 40*u.g/u.mol # Molecular weight of NaOH
 m_B = MW_NaOH*V_BS*eqv_PACl_v
-<<<<<<< HEAD
-m_B
-
-# Compensating for Alkalinity
-T_Alk = 117*u.mg/u.L # as CaCO3 from AWQR 2018
-
-=======
 m_B.to(u.g)
 
 # Acid Neutralizing Capacity
 T_Alk = 2.8E-3*u.mol/u.L # eqv/L
 pH = 7.67
+pH_Target = 7.5 # Target pH
+pH_Current = 7.1
 
 def M_OH(pH):
     """This function calculates the molarity of OH from the pH.
@@ -267,10 +266,21 @@ def Total_Carbonates(pH, Total_Alkalinity):
     >>> Total_Carbonates(10, 1*u.mol/u.L)
     1.359830978063728 equivalents/liter
     """
-    return (Total_Carbonates * (u.eq/u.mol * alpha1_carbonate(pH) +
-            2 * u.eq/u.mol * alpha2_carbonate(pH)) +
-1 * u.eq/u.mol * Kw/invpH(pH) - 1 * u.eq/u.mol * invpH(pH))
->>>>>>> 7c64ffd9db9b42cca538545264197bb77757f551
+    return (Total_Alkalinity + epa.invpH(pH) - epa.Kw /
+        epa.invpH(pH)) / (2*epa.alpha2_carbonate(pH) + epa.alpha1_carbonate(pH))
+
+C_T = Total_Carbonates(pH,T_Alk).to(u.meq/u.L)        
+ANC_Current = epa.ANC_closed(pH_Current,C_T)
+ANC_Current.to(u.meq/u.L)
+ANC_Target = epa.ANC_closed(pH_Target,C_T)
+ANC_Target.to(u.meq/u.L)
+
+Base_Water = ANC_Target - ANC_Current
+rpm_target = 15*u.rpm
+mL_rev_nom_B = 0.21*u.mL/u.rev
+
+N_BS = Base_Water*Q/(rpm_target*mL_rev_nom_B)
+N_BS.to(u.eq/u.L)
 ```
 
 ##Doctest
