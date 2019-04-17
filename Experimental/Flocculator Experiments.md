@@ -179,15 +179,72 @@ T_CS.to(u.hr)
 
 ## PACl Pump
 ```python
+MOLEC_WEIGHT_ALUMINUM = 0.027*u.kg/u.mol
+
+def conc_precipitate(ConcAluminum, coag):
+    """Return coagulant precipitate concentration given aluminum dose.
+    Note that conc_precipitate returns a value that varies from the equivalent
+    MathCAD function beginning at the third decimal place. The majority of
+    functions below this point in the file ultimately call on conc_precipitate
+    at some point, and will not return the same value as their equivalent
+    function in MathCAD. This is known.
+    """
+    MOLEC_WEIGHT_ALUMINUM = 0.027*u.kg/u.mol
+    return (ConcAluminum * coag.PrecipMolecWeight) / (MOLEC_WEIGHT_ALUMINUM * coag.PrecipAluminumMPM)
+conc_precipitate(1*u.mg/u.L,floc.PACl)
+
+def frac_vol_floc_initial(ConcAluminum, ConcClay, coag, material):
+        """Return the fraction of flocs initially present."""
+        return ((conc_precipitate(ConcAluminum, coag)/coag.PrecipDensity)
+                + (ConcClay / material.Density))
+
+frac_vol_floc_initial(1*u.mg/u.L,1*u.mg/u.L,floc.PACl,floc.Clay)
+
+def ratio_area_clay_total(ConcClay, material, DiamTube, RatioHeightDiameter):
+    """Return the surface area of clay normalized by total surface area.
+    Total surface area is a combination of clay and reactor wall
+    surface areas. This function is used to estimate how much coagulant
+    actually goes to the clay.
+    """
+    return (1
+            / (1
+               + (2 * material.Diameter
+                  / (3 * DiamTube * floc.ratio_clay_sphere(RatioHeightDiameter)
+                     * (ConcClay / material.Density)
+                     )
+                  )
+               )
+)
+
+def gamma_coag(ConcClay, ConcAluminum, coag, material,
+               DiamTube, RatioHeightDiameter):
+    """Return the coverage of clay with nanoglobs.
+    This function accounts for loss to the tube flocculator walls
+    and a poisson distribution on the clay given random hits by the
+    nanoglobs. The poisson distribution results in the coverage only
+    gradually approaching full coverage as coagulant dose increases.
+    """
+    # pdb.set_trace()
+    return (1 - np.exp((
+                       (-frac_vol_floc_initial(ConcAluminum, 0*u.kg/u.m**3, coag, material)
+                         * material.Diameter)
+                        / (frac_vol_floc_initial(0*u.kg/u.m**3, ConcClay, coag, material)
+                           * coag.Diameter))
+                       * (1 / np.pi)
+                       * (ratio_area_clay_total(ConcClay, material,
+                                                DiamTube, RatioHeightDiameter)
+                          / ratio_clay_sphere(RatioHeightDiameter))
+))
+
 # Constants
 Gammas = np.array([0.0,0.1,0.2,0.3,0.4,0.5])
 C_P = np.zeros(len(Gammas))
 for i in range(0,len(Gammas)):
   C_P[i]=0
-  while np.abs(floc.gamma_coag(C_C,(C_P[i]*u.mg/u.L),floc.PACl,floc.Clay,D,floc.RATIO_HEIGHT_DIAM)-Gammas[i])>0.001:
+  while np.abs(gamma_coag(C_C,(C_P[i]*u.mg/u.L),floc.PACl,floc.Clay,D,floc.RATIO_HEIGHT_DIAM)-Gammas[i])>0.001:
     C_P[i]=C_P[i]+0.01
 C_P = C_P*u.mg/u.L    
-floc.gamma_coag(C_C,C_P,floc.PACl,floc.Clay,D,floc.RATIO_HEIGHT_DIAM)  
+gamma_coag(C_C,C_P,floc.PACl,floc.Clay,D,floc.RATIO_HEIGHT_DIAM)  
 C_PSS = 70.6*u.g/u.L # Super stock concentration
 ID_P = 1.52*u.mm
 V_PS = 1*u.L
