@@ -136,6 +136,8 @@ v_c = np.array([0.1,0.2,0.3,0.4,0.5])*u.mm/u.s
 
 Q_S = Q_SWAT(v_c,D_S,L_S,a_S)
 Q_S
+v_c.to(u.mm/u.s)/Q_S.to(u.mL/u.s)
+Q_S.to(u.mL/u.s)/v_c.to(u.mm/u.s)
 
 # Residence Times
 A_S = np.pi*D_S**2/4
@@ -143,6 +145,7 @@ V_S = A_S*L_S
 T_S = V_S/Q_S
 T_S.to(u.min)
 
+(T_S.to(u.s)*v_c.to(u.mm/u.s))**(-1)/3
 # Need to add residence time of top of settler to turbidity meter.
 ```
 
