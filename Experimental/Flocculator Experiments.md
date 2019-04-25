@@ -1,4 +1,4 @@
-#Design of Flocculation Experiments
+Design of Flocculation Experiments
 
 ## Imports
 ```python
@@ -288,23 +288,23 @@ pH = 7.67
 pH_Target = 7.5 # Target pH
 pH_Current = 7.1
 
-def M_OH(pH):
-    """This function calculates the molarity of OH from the pH.
-    Parameters
-    ----------
-    pH : float
-        pH to be inverted
-    Returns
-    -------
-    The molarity of OH (in moles per liter) of the given pH
-    Examples
-    --------
-    >>> M_OH(8.25)
-    1.778279410038923e-06 mole/liter
-    >>> M_OH(10)
-    1e-4 mole/liter
-    """
-    return 10**(pH-14)*u.mol/u.L
+# def M_OH(pH):
+#     """This function calculates the molarity of OH from the pH.
+#     Parameters
+#     ----------
+#     pH : float
+#         pH to be inverted
+#     Returns
+#     -------
+#     The molarity of OH (in moles per liter) of the given pH
+#     Examples
+#     --------
+#     >>> M_OH(8.25)
+#     1.778279410038923e-06 mole/liter
+#     >>> M_OH(10)
+#     1e-4 mole/liter
+#     """
+#     return 10**(pH-14)*u.mol/u.L
 
 def Total_Carbonates(pH, Total_Alkalinity):
     """Total carbonates (C_T) calculated from pH and total alkalinity.
@@ -336,11 +336,24 @@ ANC_Target = epa.ANC_closed(pH_Target,C_T)
 ANC_Target.to(u.meq/u.L)
 
 Base_Water = ANC_Target - ANC_Current
-rpm_target = 15*u.rpm
+Base_Water.to(u.meq/u.L)
+rpm_Target = 10*u.rpm
 mL_rev_nom_B = 0.21*u.mL/u.rev
 
-N_BS = Base_Water*Q/(rpm_target*mL_rev_nom_B)
+N_BS = Base_Water*Q/(rpm_Target*mL_rev_nom_B)
 N_BS.to(u.eq/u.L)
+m_NaOH = MW_NaOH*V_BS*N_BS
+m_NaOH.to(u.g)
+N_BSS = 1*u.eq/u.L
+V_SS = N_BS*V_BS/N_BSS
+V_SS.to(u.mL)
+V_SS_Actual = 80*u.mL
+N_B_Actual = V_SS_Actual*N_BSS/V_BS
+N_B_Actual.to(u.meq/u.L)
+rpm_Extra = Base_Water*Q/(N_B_Actual*mL_rev_nom_B)
+rpm_Extra.to(u.rpm)
+rpm_Total = rpm_Target + rpm_Extra
+rpm_Total
 ```
 
 ##Doctest
