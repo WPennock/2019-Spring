@@ -157,9 +157,10 @@ T_Tube = (52*u.inch*np.pi/4*(0.25*u.inch)**2/Q_S).to(u.s)
 
 # Calibrate SWaT Pump
 T_100mL_4_25_19 = 30*u.s
-mL_rev_S = (100*u.mL/T_100mL_4_25_19)/(50.1*u.rpm)
+T_100mL_4_26_19 = 31*u.s
+
+mL_rev_S = (100*u.mL/T_100mL_4_26_19)/(50.1*u.rpm)
 mL_rev_S.to(u.ml/u.rev)
-mL_rev_S = 3.992*u.mL/u.rev
 
 # SWaT Pump RPM
 rpm_S = rpm_pump(Q_S,mL_rev_S)
@@ -277,6 +278,11 @@ for i in range(0,len(Gammas)):
     C_P[i]=C_P[i]+0.01
 C_P = C_P*u.mg/u.L    
 gamma_coag(C_C,C_P,floc.PACl,floc.Clay,D,floc.RATIO_HEIGHT_DIAM)  
+Al2O3 = 0.106 # Percentage of Al2O3
+SG_PSS = 1.27 # Specific gravity of stock
+R_Al_Al2O3 = 0.52925 # Ratio of MW of Al to Al2O3
+C_PSS = R_Al_Al2O3*Al2O3*SG_PSS*pc.density_water(293.15*u.degK) # Super stock concentration, assuming 20°C
+C_PSS.to(u.g/u.L)
 C_PSS = 70.6*u.g/u.L # Super stock concentration
 ID_P = 1.52*u.mm
 V_PS = 1*u.L
@@ -315,36 +321,41 @@ T_PS
 n_PACl = 1.77*u.eq/u.L # Normality of PACl, eqv/L
 n_NaOH = 1*u.eq/u.L # Normality of NaOH, eqv/L
 eqv_PACl_m = n_PACl/C_PSS # equivalence of PACl by mass, eqv/g
-eqv_PACl_v = C_PSS*eqv_PACl_m # equpivalence of PACl by volume, eqv/L
-eqv_PACl_v
+eqv_PACl_m.to(u.eq/u.g)
+eqv_PACl_v = C_PS*eqv_PACl_m # equpivalence of PACl by volume, eqv/L
+eqv_PACl_v.to(u.eq/u.L)
 V_BS = 1*u.L # Volume of base stock
 MW_NaOH = 40*u.g/u.mol # Molecular weight of NaOH
 m_B = MW_NaOH*V_BS*eqv_PACl_v
 m_B.to(u.g)
 
 # Acid Neutralizing Capacity
-T_Alk = 2.8E-3*u.eq/u.L # eqv/L
-pH = 7.67
+T_Alk_CaCO3 = 117*u.mg/u.L
+MW_CaCO3 = 100.0869*u.g/u.mol
+T_Alk = T_Alk_CaCO3/MW_CaCO3
+T_Alk.to(u.eq/u.L)
+# T_Alk = 2.8E-3*u.eq/u.L # eqv/L
+pH = 7.508
 pH_Target = 7.5 # Target pH
-pH_Current = 7.1
+pH_Current = 7.05
 
-def M_OH(pH):
-    """This function calculates the molarity of OH from the pH.
-    Parameters
-    ----------
-    pH : float
-        pH to be inverted
-    Returns
-    -------
-    The molarity of OH (in moles per liter) of the given pH
-    Examples
-    --------
-    >>> M_OH(8.25)
-    1.778279410038923e-06 mole/liter
-    >>> M_OH(10)
-    1e-4 mole/liter
-    """
-    return 10**(pH-14)*u.mol/u.L
+# def M_OH(pH):
+#     """This function calculates the molarity of OH from the pH.
+#     Parameters
+#     ----------
+#     pH : float
+#         pH to be inverted
+#     Returns
+#     -------
+#     The molarity of OH (in moles per liter) of the given pH
+#     Examples
+#     --------
+#     >>> M_OH(8.25)
+#     1.778279410038923e-06 mole/liter
+#     >>> M_OH(10)
+#     1e-4 mole/liter
+#     """
+#     return 10**(pH-14)*u.mol/u.L
 
 def Total_Carbonates(pH, Total_Alkalinity):
     """Total carbonates (C_T) calculated from pH and total alkalinity.
@@ -376,9 +387,9 @@ ANC_Target = epa.ANC_closed(pH_Target,C_T)
 ANC_Target.to(u.meq/u.L)
 
 Base_Water = ANC_Target - ANC_Current
+Base_Water.to(u.eq/u.L)
 rpm_target = 15*u.rpm
 mL_rev_nom_B = 0.21*u.mL/u.rev
-
 # Calibrate Base pump
 Path_Base = r"C:\Users\whp28\Google Drive\AGUACLARA DRIVE\AguaClara Grads\William Pennock\2019 Spring\Experiments\Data\4-25-2019\Base Calibration\Base_Calibration_2.xls"
 PACl_Time = pro.column_of_time(Path_Base,1)
@@ -388,8 +399,24 @@ slope_B, int_B, r_value_B = linreg_B[0:3]
 Q_Base_Cal = ((-slope_B*u.g/u.day)/pc.density_water(283.15*u.degK)).to(u.mL/u.min)
 mL_rev_B = (Q_Base_Cal/(50*u.rpm)).to(u.mL/u.rev)
 mL_rev_B
-N_BS = Base_Water*Q/(rpm_target*mL_rev_nom_B)
-N_BS.to(u.eq/u.L)
+N_BS2 = Base_Water*Q/(rpm_target*mL_rev_B)
+N_BS2.to(u.eq/u.L)
+m_B2 = MW_NaOH*V_BS*N_BS2
+m_B2.to(u.g)
+```
+## Using base to solubilize PACl
+It turns out that copper pipe is very insoluble at pH = 10 ([link](https://www.researchgate.net/publication/254148306_Effects_of_Changing_disinfectants_on_lead_and_copper_release/figures?lo=1)), but PACl is pretty insoluble at pH = 10 (van Benschoten and Edzwald, 1990). By adjusting the pH to 10, I aim to eliminate the film on the tubing.
+```python
+pH_Soluble = 10.0
+ANC_Soluble = epa.ANC_closed(pH_Soluble,C_T)
+ANC_Soluble.to(u.eq/u.L)
+Base_Caustic = ANC_Soluble-ANC_Current
+Base_Caustic.to(u.eq/u.L)
+Q_B_Caustic = Base_Caustic*Q/N_BS2
+Q_B_Caustic.to(u.mL/u.min)
+rpm_Caustic = Q_B_Caustic/mL_rev_B
+T_Caustic = T_Stock(Base_Caustic,Q,N_BS2,V_BS)
+T_Caustic
 ```
 
 ##Doctest
