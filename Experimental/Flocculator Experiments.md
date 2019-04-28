@@ -189,7 +189,7 @@ T_tot
 ## Clay Pump
 ```python
 # Constants
-C_C = 50*u.NTU # Desired clay concentration
+C_C = 90*u.NTU # Desired clay concentration
 ID_C = 2.79*u.mm # Nominal inner diameter of clay pump tubing
 V_CS = 2*u.L # Volume of clay stock
 
@@ -199,7 +199,7 @@ mL_rev_nom_C = pump.vol_per_rev_3_stop(inner_diameter=ID_C)
 C_CS_range = C_range(Q,C_C,mL_rev_nom_C)
 C_CS_range
 
-C_CS = 60*u.g/u.L
+C_CS = 100*u.g/u.L
 m_CS = V_CS*C_CS
 Q_CS = Q_Stock(C_C,Q,C_CS)
 Q_CS
@@ -303,7 +303,7 @@ mL_rev_P
 C_CP_range = C_range(Q,C_P,mL_rev_nom_P)
 C_CP_range.magnitude
 
-C_PS = 1*u.g/u.L
+C_PS = 2*u.g/u.L
 V_PSS = C_PS*V_PS/C_PSS
 V_PSS.to(u.mL)
 Q_PS = Q_Stock(C_P,Q,C_PS)
@@ -336,8 +336,10 @@ T_Alk = T_Alk_CaCO3/MW_CaCO3
 T_Alk.to(u.eq/u.L)
 # T_Alk = 2.8E-3*u.eq/u.L # eqv/L
 pH = 7.508
+
+
 pH_Target = 7.5 # Target pH
-pH_Current = 7.05
+pH_Current = 7.9
 
 # def M_OH(pH):
 #     """This function calculates the molarity of OH from the pH.
@@ -404,6 +406,21 @@ N_BS2.to(u.eq/u.L)
 m_B2 = MW_NaOH*V_BS*N_BS2
 m_B2.to(u.g)
 ```
+## Acid dose when pH > 7.5
+```python
+pH_Target = 7.5 # Target pH
+pH_Current = 7.85
+
+Acid_Water =  ANC_Current - ANC_Target
+Acid_Water.to(u.meq/u.L)
+N_AS = Base_Water*Q/(rpm_target*mL_rev_B)
+N_AS.to(u.eq/u.L)
+V_AS = 1*u.L
+
+N_ASS = 1*u.eq/u.L
+V_ASS = N_AS*V_AS/N_ASS
+V_ASS.to(u.mL)
+```
 ## Using base to solubilize PACl
 It turns out that copper pipe is very insoluble at pH = 10 ([link](https://www.researchgate.net/publication/254148306_Effects_of_Changing_disinfectants_on_lead_and_copper_release/figures?lo=1)), but PACl is pretty insoluble at pH = 10 (van Benschoten and Edzwald, 1990). By adjusting the pH to 10, I aim to eliminate the film on the tubing.
 ```python
@@ -415,8 +432,11 @@ Base_Caustic.to(u.eq/u.L)
 Q_B_Caustic = Base_Caustic*Q/N_BS2
 Q_B_Caustic.to(u.mL/u.min)
 rpm_Caustic = Q_B_Caustic/mL_rev_B
+rpm_Caustic
 T_Caustic = T_Stock(Base_Caustic,Q,N_BS2,V_BS)
 T_Caustic
+
+-np.log10(0.25/90)
 ```
 
 ##Doctest
