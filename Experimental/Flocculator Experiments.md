@@ -21,7 +21,7 @@ D = 1.25*u.inch
 A = np.pi*D**2/4
 V = L*A
 T = V/Q
-T.to(u.min)
+T.to(u.s)
 # The nominal residence time of the flocculator is 7.5 minutes.
 ```
 ## New Functions
@@ -29,10 +29,10 @@ T.to(u.min)
 max_rpm = 100*u.rev/u.min
 min_rpm = 3*u.rev/u.min
 
-def Q_SWAT(v_c,D,L,angle):
+def Q_SWaT(v_c,D,L,angle):
     """This function takes the desired capture velocity, diameter of the tube settler, length of the tube settler, and its angle with respect to the horizon to give a needed flow rate through the tube settler.
     >>> from aguaclara.play import*
-    >>> Q_SWAT(0.12*u.mm/u.s,1.049*u.inch,86*u.cm,60*u.deg)
+    >>> Q_SWaT(0.12*u.mm/u.s,1.049*u.inch,86*u.cm,60*u.deg)
     <Quantity(68.26554885933704, 'milliliter / minute')>
 
     """
@@ -129,7 +129,7 @@ C_range(0.1*u.L/u.s,50*u.mg/u.L,0.10*u.mL/u.rev)
 C_range(0.1*u.L/u.s,C_test,0.10*u.mL/u.rev)
 ```
 
-## SWAT Pump
+## SWaT Pump
 ```python
 # Constants
 L_S = 86*u.cm
@@ -138,7 +138,7 @@ a_S = 60*u.deg
 
 v_c = np.array([0.1,0.2,0.3,0.4,0.5])*u.mm/u.s
 
-Q_S = Q_SWAT(v_c,D_S,L_S,a_S)
+Q_S = Q_SWaT(v_c,D_S,L_S,a_S)
 Q_S
 v_c.to(u.mm/u.s)/Q_S.to(u.mL/u.s)
 Q_S.to(u.mL/u.s)/v_c.to(u.mm/u.s)
@@ -165,7 +165,6 @@ mL_rev_S.to(u.ml/u.rev)
 # SWaT Pump RPM
 rpm_S = rpm_pump(Q_S,mL_rev_S)
 rpm_S
-
 v_c_Max = v_capture(max_rpm*mL_rev_S,D_S,L_S,a_S)
 v_c_Max
 v_c_Min = v_capture(min_rpm*mL_rev_S,D_S,L_S,a_S)
@@ -328,7 +327,6 @@ V_BS = 1*u.L # Volume of base stock
 MW_NaOH = 40*u.g/u.mol # Molecular weight of NaOH
 m_B = MW_NaOH*V_BS*eqv_PACl_v
 m_B.to(u.g)
-
 # Acid Neutralizing Capacity
 T_Alk_CaCO3 = 117*u.mg/u.L
 MW_CaCO3 = 100.0869*u.g/u.mol
@@ -336,7 +334,6 @@ T_Alk = T_Alk_CaCO3/MW_CaCO3
 T_Alk.to(u.eq/u.L)
 # T_Alk = 2.8E-3*u.eq/u.L # eqv/L
 pH = 7.508
-
 
 pH_Target = 7.5 # Target pH
 pH_Current = 7.9
@@ -413,7 +410,9 @@ pH_Current = 7.85
 
 Acid_Water =  ANC_Current - ANC_Target
 Acid_Water.to(u.meq/u.L)
-N_AS = Base_Water*Q/(rpm_target*mL_rev_B)
+N_P = C_P*eqv_PACl_m # equpivalence of PACl by volume, eqv/L
+N_P.to(u.eq/u.L)
+N_AS = Base_Water*Q/(rpm_target*mL_rev_B) - N_P[0]
 N_AS.to(u.eq/u.L)
 V_AS = 1*u.L
 
