@@ -15,7 +15,10 @@ import pdb
 
 ## System Constants
 ```python
-Q = 100*u.mL/u.s
+hL = ((51+3/8)*u.inch).to(u.cm)
+Q = 6*u.L/(50*u.s)
+Q.to(u.mL/u.s)
+# Q = 100*u.mL/u.s
 L = 56.35*u.m
 D = 1.25*u.inch
 A = np.pi*D**2/4
