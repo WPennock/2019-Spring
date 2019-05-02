@@ -61,16 +61,16 @@ EndLoc = np.where(DayFrac==find_nearest(DayFrac,End))[0][0]
 ```python
 # Process Variables
 # Load the entirety of these variables, because they give a picture of the overall process.
-Time = pro.column_of_time(data_file, 0)[StartLoc:EndLoc]
-State = pro.column_of_data(data_file, 0, 17)[StartLoc:EndLoc]
+Time = pro.column_of_time(data_file, 0)
+State = pro.column_of_data(data_file, 0, 17)
 
-Clay = pro.column_of_data(data_file, 0, 8)[StartLoc:EndLoc]
-SWaT = pro.column_of_data(data_file, 0, 9)[StartLoc:EndLoc]
+Clay = pro.column_of_data(data_file, 0, 8)
+SWaT = pro.column_of_data(data_file, 0, 9)
 
 plt.clf(), plt.close('all')
 fig0 = plt.figure(0)
 ax1 = fig0.add_subplot(111)
-line1 = ax1.plot(Time,State,'r',label="State")
+line1 = ax1.plot(Time[StartLoc:EndLoc],State[StartLoc:EndLoc],'r',label="State")
 plt.ylabel("State")
 ax2 = fig0.add_subplot(111,sharex=ax1,frameon=False)
 line2 = ax2.plot(Time,Clay,'g',label="Clay Pump Fraction")
@@ -83,11 +83,11 @@ labels = [l.get_label() for l in lines]
 ax1.legend(lines,labels,loc=0)
 plt.show()
 
-pH = pro.column_of_data(data_file, 0, 1)[StartLoc:EndLoc]
+pH = pro.column_of_data(data_file, 0, 1)
 
-T_Air = pro.column_of_data(data_file, 0, 3)[StartLoc:EndLoc]*u.degC
-T_Wat = pro.column_of_data(data_file, 0, 4)[StartLoc:EndLoc]*u.degC
-T_AC = pro.column_of_data(data_file, 0, 5)[StartLoc:EndLoc]*u.degC
+T_Air = pro.column_of_data(data_file, 0, 3)*u.degC
+T_Wat = pro.column_of_data(data_file, 0, 4)*u.degC
+T_AC = pro.column_of_data(data_file, 0, 5)*u.degC
 
 plt.clf(), plt.close('all')
 fig1 = plt.figure(1)
@@ -95,9 +95,9 @@ ax1 = fig1.add_subplot(111)
 line1 = ax1.plot(Time,pH,'r',label="pH")
 plt.ylabel("pH")
 ax2 = fig1.add_subplot(111,sharex=ax1,frameon=False)
-line2 = ax2.plot(Time,T_Air,'g',label="Air Temperature")
-line3 = ax2.plot(Time,T_Wat,'xkcd:purple',label="Water Temperature")
-line4 = ax2.plot(Time,T_AC,'b',label="AC Temperature")
+line2 = ax2.plot(Time[StartLoc:EndLoc],T_Air[StartLoc:EndLoc],'g',label="Air Temperature")
+line3 = ax2.plot(Time[StartLoc:EndLoc],T_Wat[StartLoc:EndLoc],'xkcd:purple',label="Water Temperature")
+line4 = ax2.plot(Time[StartLoc:EndLoc],T_AC[StartLoc:EndLoc],'b',label="AC Temperature")
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
 plt.ylabel("Temperature (C)")
@@ -108,19 +108,19 @@ labels = [l.get_label() for l in lines]
 ax1.legend(lines,labels,loc=1)
 plt.show()
 
-hL = pro.column_of_data(data_file, 0, 2)[StartLoc:EndLoc]*u.cm
-d_AC = pro.column_of_data(data_file, 0, 6)[StartLoc:EndLoc]*u.cm
+hL = pro.column_of_data(data_file, 0, 2)*u.cm
+d_AC = pro.column_of_data(data_file, 0, 6)*u.cm
 
-Bal = pro.column_of_data(data_file, 0, 7)[StartLoc:EndLoc]*u.g
+Bal = pro.column_of_data(data_file, 0, 7)*u.g
 
 plt.clf(), plt.close('all')
 fig2 = plt.figure(2)
 ax1 = fig2.add_subplot(111)
-line1 = ax1.plot(Time,Bal,'g',label="Balance")
+line1 = ax1.plot(Time[StartLoc:EndLoc],Bal[StartLoc:EndLoc],'g',label="Balance")
 plt.ylabel("Mass (g)")
 ax2 = fig2.add_subplot(111,sharex=ax1,frameon=False)
-line2 = ax2.plot(Time,hL,'r',label="Head Loss")
-line3 = ax2.plot(Time,d_AC,'b',label="AC Height")
+line2 = ax2.plot(Time[StartLoc:EndLoc],hL[StartLoc:EndLoc],'r',label="Head Loss")
+line3 = ax2.plot(Time[StartLoc:EndLoc],d_AC[StartLoc:EndLoc],'b',label="AC Height")
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
 plt.ylabel("Height (cm)")
@@ -130,19 +130,19 @@ ax1.legend(lines,labels,loc=0)
 plt.show()
 # Process Data
 
-Inf_All = pro.column_of_data(data_file, 0, 11)
-Eff_All = pro.column_of_data(data_file, 0, 12)
-Abs_All = pro.column_of_data(data_file, 0, 19)
+Inf = pro.column_of_data(data_file, 0, 11)*u.NTU
+Eff = pro.column_of_data(data_file, 0, 12)*u.NTU
+Abs = pro.column_of_data(data_file, 0, 19)
 
 plt.clf(), plt.close('all')
 fig3 = plt.figure(3)
 ax1 = fig3.add_subplot(111)
-line1 = ax1.plot(Time,Abs_All,'g',label="UV 254")
+line1 = ax1.plot(Time[StartLoc:EndLoc],Abs_All[StartLoc:EndLoc],'g',label="UV 254")
 plt.ylabel("Absorbance")
 plt.ylim([-2,2])
 ax2 = fig3.add_subplot(111,sharex=ax1,frameon=False)
-line2 = ax2.plot(Time,Inf_All,'r',label="Influent")
-line3 = ax2.plot(Time,Eff_All,'b',label="Effluent")
+line2 = ax2.plot(Time[StartLoc:EndLoc],Inf_All[StartLoc:EndLoc],'r',label="Influent")
+line3 = ax2.plot(Time[StartLoc:EndLoc],Eff_All[StartLoc:EndLoc],'b',label="Effluent")
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
 plt.ylabel("Turbidity (NTU)")
@@ -153,51 +153,113 @@ ax1.legend(lines,labels,loc=0)
 plt.show()
 ```
 
+## Determining Coagulant Dose
+```python
+Dose
+```
+
 ## Dividing Experiments
 ```python
 # Finding indices of experiments
 
-
 Begins = StateFile["Day fraction since midnight on " + Day.replace("-","/")].iloc[ StateFile[StateFile[" State ID"] == 2].index].values
 BeginData = [find_nearest(DayFrac,l) for l in Begins]
-BeginLoc = [np.where(DayFrac==l) for l in BeginData]
-
-
+BeginLoc = [np.where(DayFrac==l)[0][0] for l in BeginData]
+BeginLoc
+BeginLoc.append(EndLoc)
+BeginLoc
 
 Reads = StateFile["Day fraction since midnight on " + Day.replace("-","/")].iloc[ StateFile[StateFile[" State ID"] == 3].index].values
 ReadData = [find_nearest(DayFrac,l) for l in Reads]
-ReadLoc = [np.where(DayFrac==l) for l in ReadData]
+ReadLoc = [np.where(DayFrac==l)[0][0] for l in ReadData]
+ReadLoc
 
 Flush = StateFile["Day fraction since midnight on " + Day.replace("-","/")].iloc[ StateFile[StateFile[" State ID"] == 4].index].values
-FlushLoc = np.where(DayFrac==find_nearest(DayFrac,Flush))
+FlushLoc = np.where(DayFrac==find_nearest(DayFrac,Flush))[0][0]
 ReadLoc.append(FlushLoc)
 
-# Divide up experimental data
-Inf = np.zeros(len(ReadLoc))
-Eff = np.zeros(len(ReadLoc))
-Abs = np.zeros(len(ReadLoc))
+# Calculate lag time
+def Q_c(v_c, D, L, alpha):
+    return (np.pi/4*D**2*v_c*(L/D*np.cos(alpha)+np.sin(alpha))).to(u.mL/u.min)
+L_SWaT = 86*u.cm
+D_SWaT = 1.049*u.inch
+a_SWaT = 60*u.deg    
+v_c = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6])*u.mm/u.s
+Q_SWaT = Q_c(v_c,D_SWaT,L_SWaT,a_SWaT)
+Q_SWaT
+V_SWaT = np.pi*D_SWaT**2/4*L_SWaT
+T_SWaT = (V_SWaT/Q_SWaT).to(u.s)
+T_SWaT
+V_Plant = (56.35*u.m*np.pi/4*(1.25*u.inch)**2).to(u.L)
+T_Plant = Meta.loc[MetaID-1, "Residence Time (s)"]*u.s
+T_Total = T_Plant + T_SWaT
+Lag = [int(np.round(l/(5*u.s))) for l in T_Total]
+# Inspect performance of different runs
+plt.clf(),plt.close('all')
+fig4 = plt.figure(4)
+for i in range(0,len(ReadLoc)):
+    ax = fig4.add_subplot(2,3,i+1)
+    ax.plot(Time[ReadLoc[i]:BeginLoc[i+1]],Inf[ReadLoc[i]-Lag[i]:BeginLoc[i+1]-Lag[i]],'r-')
+    ax.plot(Time[ReadLoc[i]:BeginLoc[i+1]],Eff[ReadLoc[i]:BeginLoc[i+1]],'b-')
+plt.show()
+# Adjust Endpoints
+## Subplot 2
+plt.clf(),plt.close('all')
+plt.figure(5)
+plt.plot(Time[ReadLoc[1]:BeginLoc[1+1]],Inf[ReadLoc[1]:BeginLoc[1+1]],'r-')
+plt.plot(Time[ReadLoc[1]:BeginLoc[1+1]],Eff[ReadLoc[1]:BeginLoc[1+1]],'b-')
+plt.axis([0.057,0.061,70,75])
+plt.show()
 
-for i in range(0,len(ReadLoc))
+ReadLoc[1] = np.where(Time.magnitude == find_nearest(Time.magnitude,0.0585))[0][0]
 
+## Subplot 6
+plt.clf(),plt.close('all')
+plt.figure(6)
+plt.plot(Time[ReadLoc[5]:BeginLoc[5+1]],Inf[ReadLoc[5]:BeginLoc[5+1]],'r-')
+plt.plot(Time[ReadLoc[5]:BeginLoc[5+1]],Eff[ReadLoc[5]:BeginLoc[5+1]],'b-')
+plt.axis([0.0952,0.0967,81,84])
+plt.show()
+(500*u.s).to(u.day)
+T_SWaT[5].to(u.day)
+ReadLoc[5] = np.where(Time.magnitude == find_nearest(Time.magnitude,0.0952))[0][0]
+BeginLoc[5+1] = np.where(Time.magnitude == find_nearest(Time.magnitude,0.0967))[0][0]
 ```
-## Experiments
-### Experiment 1
+## Find Average Values
 ```python
-```
-### Experiment 2
-```python
-```
-### Experiment 3
-```python
-```
-### Experiment 4
-```python
-```
-## Determining Coagulant Dose
-```python
+# Lagged Values
+pH_avg = np.zeros(len(v_c))
+Inf_avg = np.zeros(len(v_c))
+hL_avg = np.zeros(len(v_c))
+T_AC_avg = np.zeros(len(v_c))
+d_AC_avg = np.zeros(len(v_c))
 
+for i in range(0,len(v_c)):
+    pH_avg[i] = np.mean(pH[ReadLoc[i]-Lag[i]:BeginLoc[i+1]-Lag[i]])
+    Inf_avg[i] = np.mean((Inf[ReadLoc[i]-Lag[i]:BeginLoc[i+1]-Lag[i]]).to(u.NTU)).magnitude
+    hL_avg[i] = np.mean((hL[ReadLoc[i]-Lag[i]:BeginLoc[i+1]-Lag[i]]).to(u.cm)).magnitude
+    d_AC_avg[i] = np.mean((d_AC[ReadLoc[i]-Lag[i]:BeginLoc[i+1]-Lag[i]]).to(u.cm)).magnitude
+  # Could adjust lag on T_AC to reflect time between tank and inlet  
+    T_AC_avg[i] = np.mean((T_AC[ReadLoc[i]-Lag[i]:BeginLoc[i+1]-Lag[i]]).to(u.degC)).magnitude
+# Real Time Values
+Abs_avg = np.zeros(len(v_c))
+Eff_avg = np.zeros(len(v_c))
+T_Wat_avg = np.zeros(len(v_c))
+T_Air_avg = np.zeros(len(v_c))
+
+for i in range(0,len(v_c)):
+    Abs_avg[i] = np.mean(pH[ReadLoc[i]:BeginLoc[i+1]])
+    Eff_avg[i] = np.mean((Eff[ReadLoc[i]:BeginLoc[i+1]]).to(u.NTU)).magnitude
+    T_Wat_avg = np.mean((T_Wat[ReadLoc[i]:BeginLoc[i+1]]).to(u.degC)).magnitude
+    T_Air_avg = np.mean((T_Air[ReadLoc[i]:BeginLoc[i+1]]).to(u.degC)).magnitude
+# Constant values
+Q = [((V_Plant/T_Plant).to(u.mL/u.s)).magnitude for l in range(0,len(v_c))] # Chemical addition all <1% of total, SWaT varies from 1-4%.
+v_c = (v_c.to(u.mm/u.s)).magnitude
+ID = [MetaID + l for l in range(0,len(v_c))] # Chemical addition all <1% of total, SWaT varies from 1-4%.
+Dose
 ```
 
 ## Exporting Data
 ```python
+Matrix = np.column_stack()
 ```
