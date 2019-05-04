@@ -32,8 +32,8 @@ plt.rcParams.update(params)
 ```python
 MetaID = 40
 # Drive depends on computer where data are being processed
-# Drive = "C:\\Users\\whp28\\Google Drive\\AGUACLARA DRIVE\\AguaClara Grads\\William Pennock\\
-Drive = "C:\\Users\\William\\Google Drive\\AGUACLARA DRIVE\\AguaClara Grads\\William Pennock\\"
+Drive = "C:\\Users\\whp28\\Google Drive\\AGUACLARA DRIVE\\AguaClara Grads\\William Pennock\\"
+# Drive = "C:\\Users\\William\\Google Drive\\AGUACLARA DRIVE\\AguaClara Grads\\William Pennock\\"
 Meta_Path = Drive + "Meta File.xls"
 Meta = pd.read_excel(Meta_Path)
 Path = Meta.loc[MetaID-1, "C:\\Users\\whp28\\Google Drive\\AGUACLARA DRIVE\\AguaClara Grads\\William Pennock\\"] + "\\"
@@ -137,12 +137,12 @@ Abs = pro.column_of_data(data_file, 0, 19)
 plt.clf(), plt.close('all')
 fig3 = plt.figure(3)
 ax1 = fig3.add_subplot(111)
-line1 = ax1.plot(Time[StartLoc:EndLoc],Abs_All[StartLoc:EndLoc],'g',label="UV 254")
+line1 = ax1.plot(Time[StartLoc:EndLoc],Abs[StartLoc:EndLoc],'g',label="UV 254")
 plt.ylabel("Absorbance")
 plt.ylim([-2,2])
 ax2 = fig3.add_subplot(111,sharex=ax1,frameon=False)
-line2 = ax2.plot(Time[StartLoc:EndLoc],Inf_All[StartLoc:EndLoc],'r',label="Influent")
-line3 = ax2.plot(Time[StartLoc:EndLoc],Eff_All[StartLoc:EndLoc],'b',label="Effluent")
+line2 = ax2.plot(Time[StartLoc:EndLoc],Inf[StartLoc:EndLoc],'r',label="Influent")
+line3 = ax2.plot(Time[StartLoc:EndLoc],Eff[StartLoc:EndLoc],'b',label="Effluent")
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
 plt.ylabel("Turbidity (NTU)")

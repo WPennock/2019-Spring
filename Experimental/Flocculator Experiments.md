@@ -15,8 +15,9 @@ import pdb
 
 ## System Constants
 ```python
-hL = ((51+3/8)*u.inch).to(u.cm)
-Q = 6*u.L/(50*u.s)
+hL = ((51+3/4)*u.inch).to(u.cm)
+hL
+Q = 6*u.L/(51.2*u.s)
 Q.to(u.mL/u.s)
 # Q = 100*u.mL/u.s
 L = 56.35*u.m
@@ -164,7 +165,17 @@ T_100mL_4_26_19 = 31*u.s
 
 mL_rev_S = (100*u.mL/T_100mL_4_26_19)/(50.1*u.rpm)
 mL_rev_S.to(u.ml/u.rev)
-
+Path_SWaT = r"C:\Users\whp28\Google Drive\AGUACLARA DRIVE\AguaClara Grads\William Pennock\2019 Spring\Experiments\Data\5-3-2019\Calibrations\SWaT Calibration.xls"
+SWaT_Time = pro.column_of_time(Path_SWaT,1)
+SWaT_Balance = pro.column_of_data(Path_SWaT,1,7)*u.g
+linreg_S = stats.linregress(SWaT_Time,SWaT_Balance)
+slope_S, int_S, r_value_S = linreg_S[0:3]
+r_value_S**2
+T_Cal_S = 24.5*u.degC
+rpm_Cal_S = 50.1*u.rpm
+Q_SWaT_Cal = ((-slope_S*u.g/u.day)/pc.density_water(T_Cal_S)).to(u.mL/u.min)
+mL_rev_S = (Q_SWaT_Cal/(rpm_Cal_S)).to(u.mL/u.rev)
+mL_rev_S
 # SWaT Pump RPM
 rpm_S = rpm_pump(Q_S,mL_rev_S)
 rpm_S
@@ -285,7 +296,6 @@ SG_PSS = 1.27 # Specific gravity of stock
 R_Al_Al2O3 = 0.52925 # Ratio of MW of Al to Al2O3
 C_PSS = R_Al_Al2O3*Al2O3*SG_PSS*pc.density_water(293.15*u.degK) # Super stock concentration, assuming 20°C
 C_PSS.to(u.g/u.L)
-C_PSS = 70.6*u.g/u.L # Super stock concentration
 ID_P = 1.52*u.mm
 V_PS = 1*u.L
 
@@ -294,20 +304,25 @@ V_PS = 1*u.L
 mL_rev_nom_P = pump.vol_per_rev_3_stop(inner_diameter=ID_P)
 mL_rev_nom_P
 ## Measured capacity calibration
-Path_PACl = r"C:\Users\whp28\Google Drive\AGUACLARA DRIVE\AguaClara Grads\William Pennock\2019 Spring\Experiments\Data\4-25-2019\PACl Calibration\PACl_Calibration_2.xls"
+Path_PACl = r"C:\Users\whp28\Google Drive\AGUACLARA DRIVE\AguaClara Grads\William Pennock\2019 Spring\Experiments\Data\5-3-2019\Calibrations\PACl Calibration.xls"
 PACl_Time = pro.column_of_time(Path_PACl,1)
 PACl_Balance = pro.column_of_data(Path_PACl,1,7)*u.g
 linreg = stats.linregress(PACl_Time,PACl_Balance)
-slope, int, r_value = linreg[0:3]
-Q_PACl_Cal = ((-slope*u.g/u.day)/pc.density_water(283.15*u.degK)).to(u.mL/u.min)
-mL_rev_P = (Q_PACl_Cal/(50*u.rpm)).to(u.mL/u.rev)
+slope_P, int_P, r_value_P = linreg[0:3]
+r_value_P**2
+T_Cal_P = 24*u.degC
+rpm_Cal_P = 100*u.rpm
+Q_PACl_Cal = ((-slope_P*u.g/u.day)/pc.density_water(T_Cal_P)).to(u.mL/u.min)
+mL_rev_P = (Q_PACl_Cal/(rpm_Cal_P)).to(u.mL/u.rev)
 mL_rev_P
 C_CP_range = C_range(Q,C_P,mL_rev_nom_P)
 C_CP_range.magnitude
 
-C_PS = 2*u.g/u.L
+C_PS_nom = 2*u.g/u.L
 V_PSS = C_PS*V_PS/C_PSS
 V_PSS.to(u.mL)
+C_PS = 28*u.mL*C_PSS/V_PS
+C_PS.to(u.g/u.L)
 Q_PS = Q_Stock(C_P,Q,C_PS)
 Q_PS
 rpm_PS = rpm_pump(Q_PS,mL_rev_P)
@@ -339,25 +354,7 @@ T_Alk.to(u.eq/u.L)
 pH = 7.508
 
 pH_Target = 7.5 # Target pH
-pH_Current = 7.9
-
-# def M_OH(pH):
-#     """This function calculates the molarity of OH from the pH.
-#     Parameters
-#     ----------
-#     pH : float
-#         pH to be inverted
-#     Returns
-#     -------
-#     The molarity of OH (in moles per liter) of the given pH
-#     Examples
-#     --------
-#     >>> M_OH(8.25)
-#     1.778279410038923e-06 mole/liter
-#     >>> M_OH(10)
-#     1e-4 mole/liter
-#     """
-#     return 10**(pH-14)*u.mol/u.L
+pH_Current = 7.82
 
 def Total_Carbonates(pH, Total_Alkalinity):
     """Total carbonates (C_T) calculated from pH and total alkalinity.
@@ -390,16 +387,16 @@ ANC_Target.to(u.meq/u.L)
 
 Base_Water = ANC_Target - ANC_Current
 Base_Water.to(u.eq/u.L)
-rpm_target = 15*u.rpm
+rpm_target = 25*u.rpm
 mL_rev_nom_B = 0.21*u.mL/u.rev
 # Calibrate Base pump
-Path_Base = r"C:\Users\whp28\Google Drive\AGUACLARA DRIVE\AguaClara Grads\William Pennock\2019 Spring\Experiments\Data\4-25-2019\Base Calibration\Base_Calibration_2.xls"
+Path_Base = r"C:\Users\whp28\Google Drive\AGUACLARA DRIVE\AguaClara Grads\William Pennock\2019 Spring\Experiments\Data\5-3-2019\Calibrations\Base Calibration 2.xls"
 PACl_Time = pro.column_of_time(Path_Base,1)
 PACl_Balance = pro.column_of_data(Path_Base,1,7)*u.g
 linreg_B = stats.linregress(PACl_Time,PACl_Balance)
 slope_B, int_B, r_value_B = linreg_B[0:3]
-Q_Base_Cal = ((-slope_B*u.g/u.day)/pc.density_water(283.15*u.degK)).to(u.mL/u.min)
-mL_rev_B = (Q_Base_Cal/(50*u.rpm)).to(u.mL/u.rev)
+Q_Base_Cal = ((-slope_B*u.g/u.day)/pc.density_water(24*u.degC)).to(u.mL/u.min)
+mL_rev_B = (Q_Base_Cal/(30*u.rpm)).to(u.mL/u.rev)
 mL_rev_B
 N_BS2 = Base_Water*Q/(rpm_target*mL_rev_B)
 N_BS2.to(u.eq/u.L)
@@ -415,13 +412,15 @@ Acid_Water =  ANC_Current - ANC_Target
 Acid_Water.to(u.meq/u.L)
 N_P = C_P*eqv_PACl_m # equpivalence of PACl by volume, eqv/L
 N_P.to(u.eq/u.L)
-N_AS = Base_Water*Q/(rpm_target*mL_rev_B) - N_P[0]
+N_AS = Acid_Water*Q/(rpm_target*mL_rev_B) - N_P[1]
 N_AS.to(u.eq/u.L)
 V_AS = 1*u.L
 
 N_ASS = 1*u.eq/u.L
 V_ASS = N_AS*V_AS/N_ASS
 V_ASS.to(u.mL)
+T_AS = T_Stock(Acid_Water,Q,N_AS,V_AS)
+T_AS
 ```
 ## Using base to solubilize PACl
 It turns out that copper pipe is very insoluble at pH = 10 ([link](https://www.researchgate.net/publication/254148306_Effects_of_Changing_disinfectants_on_lead_and_copper_release/figures?lo=1)), but PACl is pretty insoluble at pH = 10 (van Benschoten and Edzwald, 1990). By adjusting the pH to 10, I aim to eliminate the film on the tubing.
