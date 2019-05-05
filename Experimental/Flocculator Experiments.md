@@ -15,9 +15,9 @@ import pdb
 
 ## System Constants
 ```python
-hL = ((51+3/4)*u.inch).to(u.cm)
+hL = ((52)*u.inch).to(u.cm)
 hL
-Q = 6*u.L/(51.8*u.s)
+Q = 6*u.L/(52*u.s)
 Q.to(u.mL/u.s)
 # Q = 100*u.mL/u.s
 L = 56.35*u.m
@@ -26,7 +26,6 @@ A = np.pi*D**2/4
 V = L*A
 T = V/Q
 T.to(u.s)
-C_P[3]
 # The nominal residence time of the flocculator is 7.5 minutes.
 ```
 ## New Functions
