@@ -17,7 +17,7 @@ import pdb
 ```python
 hL = ((51+3/4)*u.inch).to(u.cm)
 hL
-Q = 6*u.L/(51.2*u.s)
+Q = 6*u.L/(51.8*u.s)
 Q.to(u.mL/u.s)
 # Q = 100*u.mL/u.s
 L = 56.35*u.m
@@ -26,6 +26,7 @@ A = np.pi*D**2/4
 V = L*A
 T = V/Q
 T.to(u.s)
+C_P[3]
 # The nominal residence time of the flocculator is 7.5 minutes.
 ```
 ## New Functions
@@ -158,8 +159,6 @@ T_S.to(u.min)
 T_Tube = (52*u.inch*np.pi/4*(0.25*u.inch)**2/Q_S).to(u.s)
 (T_Tube/T_S).to(u.dimensionless)
 # Residence time in tube after settler is about 9% of total residence time, so it will not be counted.
-
-# Calibrate SWaT Pump
 T_100mL_4_25_19 = 30*u.s
 T_100mL_4_26_19 = 31*u.s
 
@@ -188,14 +187,12 @@ v_c_now
 18*u.rpm*mL_rev_S
 50*u.rpm*mL_rev_S
 
-(floc.g_straight(Q_S,0.25*u.inch)).to(1/u.s)
-## SWaT Pump Calibration
 ```
 
 ## Experiment Design
 Assuming that experiments will be conducted at a single coagulant dose for all capture velocities (0.1, 0.2, 0.3, 0.4, 0.5) mm/s, the total residence time should be at least two flocculator residence times plus triple each SWaT residence time plus 500 s to read the data.
 ```python
-T_tot = (2*T + 3*np.sum(T_S) + 500*u.s*len(T_S)).to(u.min)
+T_tot = (1000*u.s + 3*np.sum(T_S) + 500*u.s*len(T_S)).to(u.min)
 T_tot
 ```
 
@@ -290,6 +287,7 @@ for i in range(0,len(Gammas)):
   while np.abs(gamma_coag(C_C,(C_P[i]*u.mg/u.L),floc.PACl,floc.Clay,D,floc.RATIO_HEIGHT_DIAM)-Gammas[i])>0.001:
     C_P[i]=C_P[i]+0.01
 C_P = C_P*u.mg/u.L    
+C_P
 gamma_coag(C_C,C_P,floc.PACl,floc.Clay,D,floc.RATIO_HEIGHT_DIAM)  
 Al2O3 = 0.106 # Percentage of Al2O3
 SG_PSS = 1.27 # Specific gravity of stock
@@ -305,8 +303,8 @@ mL_rev_nom_P = pump.vol_per_rev_3_stop(inner_diameter=ID_P)
 mL_rev_nom_P
 ## Measured capacity calibration
 Path_PACl = r"C:\Users\whp28\Google Drive\AGUACLARA DRIVE\AguaClara Grads\William Pennock\2019 Spring\Experiments\Data\5-3-2019\Calibrations\PACl Calibration.xls"
-PACl_Time = pro.column_of_time(Path_PACl,1)
-PACl_Balance = pro.column_of_data(Path_PACl,1,7)*u.g
+PACl_Time = pro.column_of_time(Path_PACl,0)
+PACl_Balance = pro.column_of_data(Path_PACl,0,7)*u.g
 linreg = stats.linregress(PACl_Time,PACl_Balance)
 slope_P, int_P, r_value_P = linreg[0:3]
 r_value_P**2
@@ -318,16 +316,19 @@ mL_rev_P
 C_CP_range = C_range(Q,C_P,mL_rev_nom_P)
 C_CP_range.magnitude
 
-C_PS_nom = 2*u.g/u.L
-V_PSS = C_PS*V_PS/C_PSS
-V_PSS.to(u.mL)
-C_PS = 28*u.mL*C_PSS/V_PS
-C_PS.to(u.g/u.L)
+C_PS_nom = 6*u.g/u.L
+V_PSS_nom = C_PS_nom*V_PS/C_PSS
+V_PSS_nom.to(u.mL)
+V_PSS = 85*u.mL
+C_PS = V_PSS*C_PSS/V_PS
+C_PS.to(u.mg/u.L)
+
 Q_PS = Q_Stock(C_P,Q,C_PS)
 Q_PS
 rpm_PS = rpm_pump(Q_PS,mL_rev_P)
 rpm_PS
-
+C_P[3]
+rpm_PS[3]
 T_PS = T_Stock(C_P,Q,C_PS,V_PS)
 T_PS
 ```
@@ -354,7 +355,7 @@ T_Alk.to(u.eq/u.L)
 pH = 7.508
 
 pH_Target = 7.5 # Target pH
-pH_Current = 7.82
+pH_Current = 8.21
 
 def Total_Carbonates(pH, Total_Alkalinity):
     """Total carbonates (C_T) calculated from pH and total alkalinity.
@@ -405,14 +406,12 @@ m_B2.to(u.g)
 ```
 ## Acid dose when pH > 7.5
 ```python
-pH_Target = 7.5 # Target pH
-pH_Current = 7.85
 
 Acid_Water =  ANC_Current - ANC_Target
 Acid_Water.to(u.meq/u.L)
 N_P = C_P*eqv_PACl_m # equpivalence of PACl by volume, eqv/L
-N_P.to(u.eq/u.L)
-N_AS = Acid_Water*Q/(rpm_target*mL_rev_B) - N_P[1]
+N_P.to(u.meq/u.L)
+N_AS = Acid_Water*Q/(rpm_target*mL_rev_B) - N_P[3]
 N_AS.to(u.eq/u.L)
 V_AS = 1*u.L
 
@@ -436,8 +435,6 @@ rpm_Caustic = Q_B_Caustic/mL_rev_B
 rpm_Caustic
 T_Caustic = T_Stock(Base_Caustic,Q,N_BS2,V_BS)
 T_Caustic
-
--np.log10(0.25/90)
 ```
 
 ##Doctest
