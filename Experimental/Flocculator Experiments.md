@@ -17,7 +17,7 @@ import pdb
 ```python
 hL = ((52)*u.inch).to(u.cm)
 hL
-Q = 6*u.L/(54.1*u.s)
+Q = 6*u.L/(52.2*u.s)
 Q.to(u.mL/u.s)
 # Q = 100*u.mL/u.s
 L = 56.35*u.m
@@ -326,14 +326,14 @@ Q_PS = Q_Stock(C_P,Q,C_PS)
 Q_PS
 rpm_PS = rpm_pump(Q_PS,mL_rev_P)
 rpm_PS
-C_P[5]
-rpm_PS[5]
+C_P[2]
+rpm_PS[2]
 T_PS = T_Stock(C_P,Q,C_PS,V_PS)
 T_PS
 1/(T_PS[5]/T_tot)
 ```
 
-## Base Pump
+## pH Adjustment
 ```python
 # Compensating for PACl
 n_PACl = 1.77*u.eq/u.L # Normality of PACl, eqv/L
@@ -353,9 +353,6 @@ T_Alk = T_Alk_CaCO3/MW_CaCO3
 T_Alk.to(u.eq/u.L)
 # T_Alk = 2.8E-3*u.eq/u.L # eqv/L
 pH = 7.508
-
-pH_Target = 11 # Target pH
-pH_Current = 8.20
 
 def Total_Carbonates(pH, Total_Alkalinity):
     """Total carbonates (C_T) calculated from pH and total alkalinity.
@@ -381,14 +378,16 @@ def Total_Carbonates(pH, Total_Alkalinity):
         epa.invpH(pH)) / (2*epa.alpha2_carbonate(pH) + epa.alpha1_carbonate(pH))
 
 C_T = Total_Carbonates(pH,T_Alk).to(u.meq/u.L)        
+
+pH_Target = 7.5 # Target pH
+pH_Current = 8.1
+
 ANC_Current = epa.ANC_closed(pH_Current,C_T)
 ANC_Current.to(u.meq/u.L)
 ANC_Target = epa.ANC_closed(pH_Target,C_T)
 ANC_Target.to(u.meq/u.L)
 
-Base_Water = ANC_Target - ANC_Current
-Base_Water.to(u.eq/u.L)
-rpm_target = 90*u.rpm
+rpm_target = 10*u.rpm
 mL_rev_nom_B = 0.21*u.mL/u.rev
 # Calibrate Base pump
 Path_Base = r"C:\Users\whp28\Google Drive\AGUACLARA DRIVE\AguaClara Grads\William Pennock\2019 Spring\Experiments\Data\5-3-2019\Calibrations\Base Calibration 2.xls"
@@ -399,28 +398,37 @@ slope_B, int_B, r_value_B = linreg_B[0:3]
 Q_Base_Cal = ((-slope_B*u.g/u.day)/pc.density_water(24*u.degC)).to(u.mL/u.min)
 mL_rev_B = (Q_Base_Cal/(30*u.rpm)).to(u.mL/u.rev)
 mL_rev_B
+```
+
+### Base dose when pH < 7.5
+```python
+Base_Water = ANC_Target - ANC_Current
+Base_Water.to(u.eq/u.L)
 N_BS2 = Base_Water*Q/(rpm_target*mL_rev_B)
 N_BS2.to(u.eq/u.L)
 m_B2 = MW_NaOH*V_BS*N_BS2
 m_B2.to(u.g)
 
-T_AS = T_Stock(Base_Water,Q,N_BS2,V_BS)
-T_AS
+T_BS = T_Stock(Base_Water,Q,N_BS2,V_BS)
+T_BS
 ```
-## Acid dose when pH > 7.5
+
+### Acid dose when pH > 7.5
 ```python
 
 Acid_Water =  ANC_Current - ANC_Target
 Acid_Water.to(u.meq/u.L)
 N_P = C_P*eqv_PACl_m # equpivalence of PACl by volume, eqv/L
 N_P.to(u.meq/u.L)
-N_AS = Acid_Water*Q/(rpm_target*mL_rev_B) - N_P[5]
+N_AS = Acid_Water*Q/(rpm_target*mL_rev_B) - N_P[0]
 N_AS.to(u.eq/u.L)
 V_AS = 1*u.L
 
 N_ASS = 1*u.eq/u.L
 V_ASS = N_AS*V_AS/N_ASS
 V_ASS.to(u.mL)
+rpm_adjust = (Q*Acid_Water/N_AS)/mL_rev_B
+rpm_adjust
 T_AS = T_Stock(Acid_Water,Q,N_AS,V_AS)
 T_AS
 ```

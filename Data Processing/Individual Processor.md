@@ -30,7 +30,7 @@ plt.rcParams.update(params)
 
 ## Load Data
 ```python
-MetaID = 46
+MetaID = 88
 # Drive depends on computer where data are being processed
 Drive = "C:\\Users\\whp28\\Google Drive\\AGUACLARA DRIVE\\AguaClara Grads\\William Pennock\\"
 # Drive = "C:\\Users\\William\\Google Drive\\AGUACLARA DRIVE\\AguaClara Grads\\William Pennock\\"
@@ -134,11 +134,6 @@ labels = [l.get_label() for l in lines]
 ax1.legend(lines,labels,loc=0)
 plt.savefig("Balance and Water Levels "+str(MetaID)+".png")
 plt.show()
-d_AC[-17]
-plt.hist(d_AC,300)
-plt.axis([22,28,0,80])
-plt.show()
-stats.mode(d_AC)
 
 # Process Data
 
@@ -218,12 +213,20 @@ plt.show()
 ## Subplot 2
 plt.clf(),plt.close('all')
 plt.figure(5)
-plt.plot(Time[ReadLoc[1]:BeginLoc[1+1]],Inf[ReadLoc[1]:BeginLoc[1+1]],'r-')
+plt.plot(Time[ReadLoc[1]:BeginLoc[1+1]],Inf[ReadLoc[1]-Lag[1]:BeginLoc[1+1]-Lag[1]],'r-')
 plt.plot(Time[ReadLoc[1]:BeginLoc[1+1]],Eff[ReadLoc[1]:BeginLoc[1+1]],'b-')
 # plt.axis([0.057,0.061,70,75])
 plt.show()
 
 ReadLoc[1] = np.where(Time.magnitude == find_nearest(Time.magnitude,0.0585))[0][0]
+
+## Subplot 3
+plt.clf(),plt.close('all')
+plt.figure(5)
+plt.plot(Time[ReadLoc[2]:BeginLoc[2+1]],Inf[ReadLoc[2]-Lag[1]:BeginLoc[2+1]-Lag[1]],'r-')
+plt.plot(Time[ReadLoc[2]:BeginLoc[2+1]],Eff[ReadLoc[2]:BeginLoc[2+1]],'b-')
+# plt.axis([0.057,0.061,70,75])
+plt.show()
 
 ## Subplot 6
 plt.clf(),plt.close('all')
@@ -245,14 +248,14 @@ BeginLoc[5+1] = np.where(Time.magnitude == find_nearest(Time.magnitude,0.0967))[
 # Lagged Values
 pH_avg = np.zeros(len(v_c))
 Inf_avg = np.zeros(len(v_c))
-hL_avg = np.zeros(len(v_c))
+hL_Floc = np.zeros(len(v_c))
 T_AC_avg = np.zeros(len(v_c))
 d_AC_avg = np.zeros(len(v_c))
 
 for i in range(0,len(v_c)):
     pH_avg[i] = np.mean(pH[ReadLoc[i]-Lag[i]:BeginLoc[i+1]-Lag[i]])
     Inf_avg[i] = np.mean((Inf[ReadLoc[i]-Lag[i]:BeginLoc[i+1]-Lag[i]]).to(u.NTU)).magnitude
-    hL_avg[i] = np.mean((hL[ReadLoc[i]-Lag[i]:BeginLoc[i+1]-Lag[i]]).to(u.cm)).magnitude
+    hL_Floc[i] = np.mean((hL[ReadLoc[i]-Lag[i]:BeginLoc[i+1]-Lag[i]]).to(u.cm)).magnitude
     d_AC_avg[i] = np.mean((d_AC[ReadLoc[i]-Lag[i]:BeginLoc[i+1]-Lag[i]]).to(u.cm)).magnitude
   # Could adjust lag on T_AC to reflect time between tank and inlet  
     T_AC_avg[i] = np.mean((T_AC[ReadLoc[i]-Lag[i]:BeginLoc[i+1]-Lag[i]]).to(u.degC)).magnitude
@@ -285,6 +288,8 @@ plt.show()
 Abs_0 = [np.mean(Abs[Time_0:len(Time)-6]) for l in range(0,len(ReadLoc))]
 pH_0 = [np.mean(pH[Time_0:len(Time)-6]) for l in range(0,len(ReadLoc))]
 Inf_0 = [np.mean(Inf[Time_0:len(Time)-6]) for l in range(0,len(ReadLoc))]
+hL_0 =
+plt.plot(Time, hL)
 ```
 ## Determining Coagulant Dose
 ```python
@@ -321,6 +326,16 @@ for i in range(0,len(ReadLoc)):
     Dose[i] = (slope_P*u.g/u.day)*
 Dose  
 ```
+
+## Calculating Head Loss
+```python
+hL_Meas = Meta.loc[MetaID-1, "Head Loss (cm)"]*u.cm
+plt.plot(Time[EndLoc+30:-20],d_AC[EndLoc+30:-20])
+Datum = np.round(np.mean(d_AC[EndLoc+30:-20]),2)
+Datum
+hL_Total = [np.mean(hL_Meas + d_AC[ReadLoc[i]:BeginLoc[i+1]] - Datum) for l in range(0,len(ReadLoc))]
+```
+
 
 ## Exporting Data
 ```python
