@@ -30,7 +30,7 @@ plt.rcParams.update(params)
 
 ## Load Data
 ```python
-MetaID = 88
+MetaID = 100
 # Drive depends on computer where data are being processed
 Drive = "C:\\Users\\whp28\\Google Drive\\AGUACLARA DRIVE\\AguaClara Grads\\William Pennock\\"
 # Drive = "C:\\Users\\William\\Google Drive\\AGUACLARA DRIVE\\AguaClara Grads\\William Pennock\\"
@@ -55,17 +55,33 @@ StartLoc = np.where(DayFrac==find_nearest(DayFrac,Start))[0][0]
 
 End = StateFile["Day fraction since midnight on " + Day.replace("-","/")].iloc[ StateFile[StateFile[" State ID"] == 0].index].values
 EndLoc = np.where(DayFrac==find_nearest(DayFrac,End))[0][0]
-```
 
-## Data Inspection
-```python
-# Process Variables
 # Load the entirety of these variables, because they give a picture of the overall process.
 Time = pro.column_of_time(data_file, 0)
 State = pro.column_of_data(data_file, 0, 17)
 
 Clay = pro.column_of_data(data_file, 0, 8)
 SWaT = pro.column_of_data(data_file, 0, 9)
+
+pH = pro.column_of_data(data_file, 0, 1)
+
+T_Air = pro.column_of_data(data_file, 0, 3)*u.degC
+T_Wat = pro.column_of_data(data_file, 0, 4)*u.degC
+T_AC = pro.column_of_data(data_file, 0, 5)*u.degC
+
+hL = pro.column_of_data(data_file, 0, 2)*u.cm
+d_AC = pro.column_of_data(data_file, 0, 6)*u.cm
+
+Bal = pro.column_of_data(data_file, 0, 7)*u.g
+
+Inf = pro.column_of_data(data_file, 0, 11)*u.NTU
+Eff = pro.column_of_data(data_file, 0, 12)*u.NTU
+Abs = pro.column_of_data(data_file, 0, 19)
+```
+
+## Data Inspection
+```python
+# Plot Data
 
 plt.clf(), plt.close('all')
 fig0 = plt.figure(0)
@@ -84,12 +100,6 @@ labels = [l.get_label() for l in lines]
 ax1.legend(lines,labels,loc=0)
 plt.savefig("State and Pump Fraction "+str(MetaID)+".png")
 plt.show()
-
-pH = pro.column_of_data(data_file, 0, 1)
-
-T_Air = pro.column_of_data(data_file, 0, 3)*u.degC
-T_Wat = pro.column_of_data(data_file, 0, 4)*u.degC
-T_AC = pro.column_of_data(data_file, 0, 5)*u.degC
 
 plt.clf(), plt.close('all')
 fig1 = plt.figure(1)
@@ -112,11 +122,6 @@ ax1.legend(lines,labels,loc=3)
 plt.savefig("pH and Temperature "+str(MetaID)+".png")
 plt.show()
 
-hL = pro.column_of_data(data_file, 0, 2)*u.cm
-d_AC = pro.column_of_data(data_file, 0, 6)*u.cm
-
-Bal = pro.column_of_data(data_file, 0, 7)*u.g
-
 plt.clf(), plt.close('all')
 fig2 = plt.figure(2)
 ax1 = fig2.add_subplot(111)
@@ -137,10 +142,6 @@ plt.show()
 
 # Process Data
 
-Inf = pro.column_of_data(data_file, 0, 11)*u.NTU
-Eff = pro.column_of_data(data_file, 0, 12)*u.NTU
-Abs = pro.column_of_data(data_file, 0, 19)
-
 plt.clf(), plt.close('all')
 fig3 = plt.figure(3)
 ax1 = fig3.add_subplot(111)
@@ -151,10 +152,11 @@ plt.ylim([-2,2])
 ax2 = fig3.add_subplot(111,sharex=ax1,frameon=False)
 line2 = ax2.plot(Time[StartLoc:EndLoc],Inf[StartLoc:EndLoc],'r',label="Influent")
 line3 = ax2.plot(Time[StartLoc:EndLoc],Eff[StartLoc:EndLoc],'b',label="Effluent")
+line3 = ax2.plot(Time[StartLoc:EndLoc],State[StartLoc:EndLoc],'k')
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
 plt.ylabel("Turbidity (NTU)")
-plt.ylim([0,200])
+plt.ylim([0,0.5])
 lines = line1 + line2 + line3
 labels = [l.get_label() for l in lines]
 ax1.legend(lines,labels,loc=0)
@@ -246,31 +248,56 @@ BeginLoc[5+1] = np.where(Time.magnitude == find_nearest(Time.magnitude,0.0967))[
 ## Find Average Values
 ```python
 # Lagged Values
-pH_avg = np.zeros(len(v_c))
-Inf_avg = np.zeros(len(v_c))
-hL_Floc = np.zeros(len(v_c))
-T_AC_avg = np.zeros(len(v_c))
-d_AC_avg = np.zeros(len(v_c))
+pH_avg = np.zeros(len(ReadLoc))
+Inf_avg = np.zeros(len(ReadLoc))
+Inf_SEM = np.zeros(len(ReadLoc))
+hL_Floc = np.zeros(len(ReadLoc))
+T_AC_avg = np.zeros(len(ReadLoc))
+d_AC_avg = np.zeros(len(ReadLoc))
 
 for i in range(0,len(v_c)):
     pH_avg[i] = np.mean(pH[ReadLoc[i]-Lag[i]:BeginLoc[i+1]-Lag[i]])
     Inf_avg[i] = np.mean((Inf[ReadLoc[i]-Lag[i]:BeginLoc[i+1]-Lag[i]]).to(u.NTU)).magnitude
+    Inf_SEM[i] = stats.sem(Inf[ReadLoc[i]-Lag[i]:BeginLoc[i+1]-Lag[i]]) #.to(u.NTU)).magnitude
     hL_Floc[i] = np.mean((hL[ReadLoc[i]-Lag[i]:BeginLoc[i+1]-Lag[i]]).to(u.cm)).magnitude
     d_AC_avg[i] = np.mean((d_AC[ReadLoc[i]-Lag[i]:BeginLoc[i+1]-Lag[i]]).to(u.cm)).magnitude
-  # Could adjust lag on T_AC to reflect time between tank and inlet  
     T_AC_avg[i] = np.mean((T_AC[ReadLoc[i]-Lag[i]:BeginLoc[i+1]-Lag[i]]).to(u.degC)).magnitude
 
 # Real Time Values
-Abs_avg = np.zeros(len(v_c))
-Eff_avg = np.zeros(len(v_c))
-T_Wat_avg = np.zeros(len(v_c))
-T_Air_avg = np.zeros(len(v_c))
+Abs_avg = np.zeros(len(ReadLoc))
+Abs_SEM = np.zeros(len(ReadLoc))
+Eff_avg = np.zeros(len(ReadLoc))
+Eff_SEM =  np.zeros(len(ReadLoc))
+T_Wat_avg = np.zeros(len(ReadLoc))
+T_Air_avg = np.zeros(len(ReadLoc))
 
 for i in range(0,len(v_c)):
     Abs_avg[i] = np.mean(pH[ReadLoc[i]:BeginLoc[i+1]])
+    Abs_SEM[i] = stats.sem(Abs[ReadLoc[i]:BeginLoc[i+1]])
     Eff_avg[i] = np.mean((Eff[ReadLoc[i]:BeginLoc[i+1]]).to(u.NTU)).magnitude
+    Eff_SEM[i] = stats.sem(Eff[ReadLoc[i]:BeginLoc[i+1]])
     T_Wat_avg = np.mean((T_Wat[ReadLoc[i]:BeginLoc[i+1]]).to(u.degC)).magnitude
     T_Air_avg = np.mean((T_Air[ReadLoc[i]:BeginLoc[i+1]]).to(u.degC)).magnitude
+
+sem1 = stats.sem(Eff[ReadLoc[0]:BeginLoc[1]])
+sem1
+sem2 = stats.sem(Inf[ReadLoc[0]-Lag[0]:BeginLoc[1]-Lag[0]])
+sem2
+mean1 = np.mean(Eff[ReadLoc[0]:BeginLoc[1]])
+mean1
+mean2 = np.mean(Inf[ReadLoc[0]-Lag[0]:BeginLoc[1]-Lag[0]])
+mean2
+
+d1 = ((mean1/mean2)*np.sqrt((sem1/mean1)**2+(sem2/mean2)**2)).magnitude
+d1
+a = mean1/mean2
+d2 = np.log10(np.e)*(d1/a)
+d2
+sem1/mean1
+sem2/mean2
+pC = -np.log10(a)
+d2/pC
+"https://chem.libretexts.org/Bookshelves/Analytical_Chemistry/Supplemental_Modules_(Analytical_Chemistry)/Quantifying_Nature/Significant_Digits/Propagation_of_Error"
 
 # Constant values
 Q = [((V_Plant/T_Plant).to(u.mL/u.s)).magnitude for l in range(0,len(v_c))]*u.mL/u.s # Chemical addition all <1% of total, SWaT varies from 1-4%.
@@ -288,8 +315,6 @@ plt.show()
 Abs_0 = [np.mean(Abs[Time_0:len(Time)-6]) for l in range(0,len(ReadLoc))]
 pH_0 = [np.mean(pH[Time_0:len(Time)-6]) for l in range(0,len(ReadLoc))]
 Inf_0 = [np.mean(Inf[Time_0:len(Time)-6]) for l in range(0,len(ReadLoc))]
-hL_0 =
-plt.plot(Time, hL)
 ```
 ## Determining Coagulant Dose
 ```python
@@ -332,12 +357,16 @@ Dose
 hL_Meas = Meta.loc[MetaID-1, "Head Loss (cm)"]*u.cm
 plt.plot(Time[EndLoc+30:-20],d_AC[EndLoc+30:-20])
 Datum = np.round(np.mean(d_AC[EndLoc+30:-20]),2)
-Datum
-hL_Total = [np.mean(hL_Meas + d_AC[ReadLoc[i]:BeginLoc[i+1]] - Datum) for l in range(0,len(ReadLoc))]
+hL_Total = [np.mean(hL_Meas + d_AC[ReadLoc[l]:BeginLoc[l+1]] - Datum) for l in range(0,len(ReadLoc))]
 ```
 
 
 ## Exporting Data
 ```python
-Matrix = np.column_stack()
+
+
+
+Matrix = np.column_stack([ID,Dose,v_c,pH_avg,pH_0,Q,hL_Floc,hL_Total,Datum,d_AC_avg,T_Air_avg,T_Wat_avg,T_AC_avg,Inf_avg,Inf_SEM,Inf_0,Eff_avg,Eff_SEM,Abs_avg,Abs_SEM,Abs_0])
+
+
 ```

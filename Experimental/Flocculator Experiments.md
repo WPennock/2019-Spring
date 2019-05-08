@@ -17,7 +17,7 @@ import pdb
 ```python
 hL = ((52)*u.inch).to(u.cm)
 hL
-Q = 6*u.L/(52.2*u.s)
+Q = 6*u.L/(49.9*u.s)
 Q.to(u.mL/u.s)
 # Q = 100*u.mL/u.s
 L = 56.35*u.m
@@ -326,9 +326,10 @@ Q_PS = Q_Stock(C_P,Q,C_PS)
 Q_PS
 rpm_PS = rpm_pump(Q_PS,mL_rev_P)
 rpm_PS
-C_P[2]
-rpm_PS[2]
+C_P[5]
+rpm_PS[5]
 T_PS = T_Stock(C_P,Q,C_PS,V_PS)
+(20.8*u.rpm*mL_rev_P/Q*C_PS).to(u.mg/u.L)
 T_PS
 1/(T_PS[5]/T_tot)
 ```
@@ -380,7 +381,7 @@ def Total_Carbonates(pH, Total_Alkalinity):
 C_T = Total_Carbonates(pH,T_Alk).to(u.meq/u.L)        
 
 pH_Target = 7.5 # Target pH
-pH_Current = 8.1
+pH_Current = 7.97
 
 ANC_Current = epa.ANC_closed(pH_Current,C_T)
 ANC_Current.to(u.meq/u.L)
@@ -420,15 +421,16 @@ Acid_Water =  ANC_Current - ANC_Target
 Acid_Water.to(u.meq/u.L)
 N_P = C_P*eqv_PACl_m # equpivalence of PACl by volume, eqv/L
 N_P.to(u.meq/u.L)
-N_AS = Acid_Water*Q/(rpm_target*mL_rev_B) - N_P[0]
+N_AS = Acid_Water*Q/(rpm_target*mL_rev_B) - N_P[4]
 N_AS.to(u.eq/u.L)
 V_AS = 1*u.L
 
 N_ASS = 1*u.eq/u.L
 V_ASS = N_AS*V_AS/N_ASS
 V_ASS.to(u.mL)
-rpm_adjust = (Q*Acid_Water/N_AS)/mL_rev_B
-rpm_adjust
+N_AS_Actual = 0.25*u.eq/u.L
+rpm_Adjust = (Q*Acid_Water/N_AS_Actual)/mL_rev_B
+rpm_Adjust#.to(u.rpm)
 T_AS = T_Stock(Acid_Water,Q,N_AS,V_AS)
 T_AS
 ```
