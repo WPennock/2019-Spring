@@ -15,11 +15,7 @@ import pdb
 
 ## System Constants
 ```python
-hL = ((52)*u.inch).to(u.cm)
-hL
-Q = 6*u.L/(49.9*u.s)
-Q.to(u.mL/u.s)
-# Q = 100*u.mL/u.s
+Q = 120*u.mL/u.s
 L = 56.35*u.m
 D = 1.25*u.inch
 A = np.pi*D**2/4
@@ -143,10 +139,8 @@ a_S = 60*u.deg
 v_c = np.array([0.1,0.2,0.3,0.4,0.5])*u.mm/u.s
 
 Q_S = Q_SWaT(v_c,D_S,L_S,a_S)
-Q_S
 v_c.to(u.mm/u.s)/Q_S.to(u.mL/u.s)
 Q_S.to(u.mL/u.s)/v_c.to(u.mm/u.s)
-
 # Residence Times
 A_S = np.pi*D_S**2/4
 V_S = A_S*L_S
@@ -158,22 +152,14 @@ T_S.to(u.min)
 T_Tube = (52*u.inch*np.pi/4*(0.25*u.inch)**2/Q_S).to(u.s)
 (T_Tube/T_S).to(u.dimensionless)
 # Residence time in tube after settler is about 9% of total residence time, so it will not be counted.
+
+# Calibrate SWaT Pump
 T_100mL_4_25_19 = 30*u.s
 T_100mL_4_26_19 = 31*u.s
 
 mL_rev_S = (100*u.mL/T_100mL_4_26_19)/(50.1*u.rpm)
 mL_rev_S.to(u.ml/u.rev)
-Path_SWaT = r"C:\Users\whp28\Google Drive\AGUACLARA DRIVE\AguaClara Grads\William Pennock\2019 Spring\Experiments\Data\5-3-2019\Calibrations\SWaT Calibration.xls"
-SWaT_Time = pro.column_of_time(Path_SWaT,1)
-SWaT_Balance = pro.column_of_data(Path_SWaT,1,7)*u.g
-linreg_S = stats.linregress(SWaT_Time,SWaT_Balance)
-slope_S, int_S, r_value_S = linreg_S[0:3]
-r_value_S**2
-T_Cal_S = 24.5*u.degC
-rpm_Cal_S = 50.1*u.rpm
-Q_SWaT_Cal = ((-slope_S*u.g/u.day)/pc.density_water(T_Cal_S)).to(u.mL/u.min)
-mL_rev_S = (Q_SWaT_Cal/(rpm_Cal_S)).to(u.mL/u.rev)
-mL_rev_S
+
 # SWaT Pump RPM
 rpm_S = rpm_pump(Q_S,mL_rev_S)
 rpm_S
@@ -186,12 +172,14 @@ v_c_now
 18*u.rpm*mL_rev_S
 50*u.rpm*mL_rev_S
 
+(floc.g_straight(Q_S,0.25*u.inch)).to(1/u.s)
+## SWaT Pump Calibration
 ```
 
 ## Experiment Design
 Assuming that experiments will be conducted at a single coagulant dose for all capture velocities (0.1, 0.2, 0.3, 0.4, 0.5) mm/s, the total residence time should be at least two flocculator residence times plus triple each SWaT residence time plus 500 s to read the data.
 ```python
-T_tot = (1000*u.s + 3*np.sum(T_S) + 500*u.s*len(T_S)).to(u.min)
+T_tot = (2*T + 3*np.sum(T_S) + 500*u.s*len(T_S)).to(u.min)
 T_tot
 ```
 
@@ -211,7 +199,6 @@ C_CS_range
 C_CS = 100*u.g/u.L
 m_CS = V_CS*C_CS
 Q_CS = Q_Stock(C_C,Q,C_CS)
-Q_CS
 rpm_CS = rpm_pump(Q_CS,mL_rev_nom_C)
 rpm_CS
 
@@ -286,13 +273,13 @@ for i in range(0,len(Gammas)):
   while np.abs(gamma_coag(C_C,(C_P[i]*u.mg/u.L),floc.PACl,floc.Clay,D,floc.RATIO_HEIGHT_DIAM)-Gammas[i])>0.001:
     C_P[i]=C_P[i]+0.01
 C_P = C_P*u.mg/u.L    
-C_P
 gamma_coag(C_C,C_P,floc.PACl,floc.Clay,D,floc.RATIO_HEIGHT_DIAM)  
 Al2O3 = 0.106 # Percentage of Al2O3
 SG_PSS = 1.27 # Specific gravity of stock
 R_Al_Al2O3 = 0.52925 # Ratio of MW of Al to Al2O3
 C_PSS = R_Al_Al2O3*Al2O3*SG_PSS*pc.density_water(293.15*u.degK) # Super stock concentration, assuming 20°C
 C_PSS.to(u.g/u.L)
+C_PSS = 70.6*u.g/u.L # Super stock concentration
 ID_P = 1.52*u.mm
 V_PS = 1*u.L
 
@@ -301,40 +288,30 @@ V_PS = 1*u.L
 mL_rev_nom_P = pump.vol_per_rev_3_stop(inner_diameter=ID_P)
 mL_rev_nom_P
 ## Measured capacity calibration
-Path_PACl = r"C:\Users\whp28\Google Drive\AGUACLARA DRIVE\AguaClara Grads\William Pennock\2019 Spring\Experiments\Data\5-3-2019\Calibrations\PACl Calibration.xls"
-PACl_Time = pro.column_of_time(Path_PACl,0)
-PACl_Balance = pro.column_of_data(Path_PACl,0,7)*u.g
+Path_PACl = r"C:\Users\whp28\Google Drive\AGUACLARA DRIVE\AguaClara Grads\William Pennock\2019 Spring\Experiments\Data\4-25-2019\PACl Calibration\PACl_Calibration_2.xls"
+PACl_Time = pro.column_of_time(Path_PACl,1)
+PACl_Balance = pro.column_of_data(Path_PACl,1,7)*u.g
 linreg = stats.linregress(PACl_Time,PACl_Balance)
-slope_P, int_P, r_value_P = linreg[0:3]
-r_value_P**2
-T_Cal_P = 24*u.degC
-rpm_Cal_P = 100*u.rpm
-Q_PACl_Cal = ((-slope_P*u.g/u.day)/pc.density_water(T_Cal_P)).to(u.mL/u.min)
-mL_rev_P = (Q_PACl_Cal/(rpm_Cal_P)).to(u.mL/u.rev)
+slope, int, r_value = linreg[0:3]
+Q_PACl_Cal = ((-slope*u.g/u.day)/pc.density_water(283.15*u.degK)).to(u.mL/u.min)
+mL_rev_P = (Q_PACl_Cal/(50*u.rpm)).to(u.mL/u.rev)
 mL_rev_P
 C_CP_range = C_range(Q,C_P,mL_rev_nom_P)
 C_CP_range.magnitude
 
-C_PS_nom = 6*u.g/u.L
-V_PSS_nom = C_PS_nom*V_PS/C_PSS
-V_PSS_nom.to(u.mL)
-V_PSS = 85*u.mL
-C_PS = V_PSS*C_PSS/V_PS
-C_PS.to(u.mg/u.L)
-
+C_PS = 2*u.g/u.L
+V_PSS = C_PS*V_PS/C_PSS
+V_PSS.to(u.mL)
 Q_PS = Q_Stock(C_P,Q,C_PS)
 Q_PS
 rpm_PS = rpm_pump(Q_PS,mL_rev_P)
 rpm_PS
-C_P[5]
-rpm_PS[5]
+
 T_PS = T_Stock(C_P,Q,C_PS,V_PS)
-(20.8*u.rpm*mL_rev_P/Q*C_PS).to(u.mg/u.L)
 T_PS
-1/(T_PS[5]/T_tot)
 ```
 
-## pH Adjustment
+## Base Pump
 ```python
 # Compensating for PACl
 n_PACl = 1.77*u.eq/u.L # Normality of PACl, eqv/L
@@ -354,6 +331,27 @@ T_Alk = T_Alk_CaCO3/MW_CaCO3
 T_Alk.to(u.eq/u.L)
 # T_Alk = 2.8E-3*u.eq/u.L # eqv/L
 pH = 7.508
+
+pH_Target = 7.5 # Target pH
+pH_Current = 7.9
+
+# def M_OH(pH):
+#     """This function calculates the molarity of OH from the pH.
+#     Parameters
+#     ----------
+#     pH : float
+#         pH to be inverted
+#     Returns
+#     -------
+#     The molarity of OH (in moles per liter) of the given pH
+#     Examples
+#     --------
+#     >>> M_OH(8.25)
+#     1.778279410038923e-06 mole/liter
+#     >>> M_OH(10)
+#     1e-4 mole/liter
+#     """
+#     return 10**(pH-14)*u.mol/u.L
 
 def Total_Carbonates(pH, Total_Alkalinity):
     """Total carbonates (C_T) calculated from pH and total alkalinity.
@@ -379,60 +377,45 @@ def Total_Carbonates(pH, Total_Alkalinity):
         epa.invpH(pH)) / (2*epa.alpha2_carbonate(pH) + epa.alpha1_carbonate(pH))
 
 C_T = Total_Carbonates(pH,T_Alk).to(u.meq/u.L)        
-
-pH_Target = 7.5 # Target pH
-pH_Current = 7.97
-
 ANC_Current = epa.ANC_closed(pH_Current,C_T)
 ANC_Current.to(u.meq/u.L)
 ANC_Target = epa.ANC_closed(pH_Target,C_T)
 ANC_Target.to(u.meq/u.L)
 
-rpm_target = 10*u.rpm
+Base_Water = ANC_Target - ANC_Current
+Base_Water.to(u.eq/u.L)
+rpm_target = 15*u.rpm
 mL_rev_nom_B = 0.21*u.mL/u.rev
 # Calibrate Base pump
-Path_Base = r"C:\Users\whp28\Google Drive\AGUACLARA DRIVE\AguaClara Grads\William Pennock\2019 Spring\Experiments\Data\5-3-2019\Calibrations\Base Calibration 2.xls"
+Path_Base = r"C:\Users\whp28\Google Drive\AGUACLARA DRIVE\AguaClara Grads\William Pennock\2019 Spring\Experiments\Data\4-25-2019\Base Calibration\Base_Calibration_2.xls"
 PACl_Time = pro.column_of_time(Path_Base,1)
 PACl_Balance = pro.column_of_data(Path_Base,1,7)*u.g
 linreg_B = stats.linregress(PACl_Time,PACl_Balance)
 slope_B, int_B, r_value_B = linreg_B[0:3]
-Q_Base_Cal = ((-slope_B*u.g/u.day)/pc.density_water(24*u.degC)).to(u.mL/u.min)
-mL_rev_B = (Q_Base_Cal/(30*u.rpm)).to(u.mL/u.rev)
+Q_Base_Cal = ((-slope_B*u.g/u.day)/pc.density_water(283.15*u.degK)).to(u.mL/u.min)
+mL_rev_B = (Q_Base_Cal/(50*u.rpm)).to(u.mL/u.rev)
 mL_rev_B
-```
-
-### Base dose when pH < 7.5
-```python
-Base_Water = ANC_Target - ANC_Current
-Base_Water.to(u.eq/u.L)
 N_BS2 = Base_Water*Q/(rpm_target*mL_rev_B)
 N_BS2.to(u.eq/u.L)
 m_B2 = MW_NaOH*V_BS*N_BS2
 m_B2.to(u.g)
-
-T_BS = T_Stock(Base_Water,Q,N_BS2,V_BS)
-T_BS
 ```
-
-### Acid dose when pH > 7.5
+## Acid dose when pH > 7.5
 ```python
+pH_Target = 7.5 # Target pH
+pH_Current = 7.85
 
 Acid_Water =  ANC_Current - ANC_Target
 Acid_Water.to(u.meq/u.L)
 N_P = C_P*eqv_PACl_m # equpivalence of PACl by volume, eqv/L
-N_P.to(u.meq/u.L)
-N_AS = Acid_Water*Q/(rpm_target*mL_rev_B) - N_P[4]
+N_P.to(u.eq/u.L)
+N_AS = Base_Water*Q/(rpm_target*mL_rev_B) - N_P[0]
 N_AS.to(u.eq/u.L)
 V_AS = 1*u.L
 
 N_ASS = 1*u.eq/u.L
 V_ASS = N_AS*V_AS/N_ASS
 V_ASS.to(u.mL)
-N_AS_Actual = 0.25*u.eq/u.L
-rpm_Adjust = (Q*Acid_Water/N_AS_Actual)/mL_rev_B
-rpm_Adjust#.to(u.rpm)
-T_AS = T_Stock(Acid_Water,Q,N_AS,V_AS)
-T_AS
 ```
 ## Using base to solubilize PACl
 It turns out that copper pipe is very insoluble at pH = 10 ([link](https://www.researchgate.net/publication/254148306_Effects_of_Changing_disinfectants_on_lead_and_copper_release/figures?lo=1)), but PACl is pretty insoluble at pH = 10 (van Benschoten and Edzwald, 1990). By adjusting the pH to 10, I aim to eliminate the film on the tubing.
@@ -448,6 +431,8 @@ rpm_Caustic = Q_B_Caustic/mL_rev_B
 rpm_Caustic
 T_Caustic = T_Stock(Base_Caustic,Q,N_BS2,V_BS)
 T_Caustic
+
+-np.log10(0.25/90)
 ```
 
 ##Doctest
