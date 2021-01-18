@@ -24,6 +24,7 @@ T = V/Q
 T.to(u.s)
 # The nominal residence time of the flocculator is 7.5 minutes.
 ```
+
 ## New Functions
 ```python
 max_rpm = 100*u.rev/u.min
@@ -139,6 +140,7 @@ a_S = 60*u.deg
 v_c = np.array([0.1,0.2,0.3,0.4,0.5])*u.mm/u.s
 
 Q_S = Q_SWaT(v_c,D_S,L_S,a_S)
+Q_S.to(u.mL/u.s)
 v_c.to(u.mm/u.s)/Q_S.to(u.mL/u.s)
 Q_S.to(u.mL/u.s)/v_c.to(u.mm/u.s)
 # Residence Times
@@ -289,13 +291,14 @@ mL_rev_nom_P = pump.vol_per_rev_3_stop(inner_diameter=ID_P)
 mL_rev_nom_P
 ## Measured capacity calibration
 Path_PACl = r"C:\Users\whp28\Google Drive\AGUACLARA DRIVE\AguaClara Grads\William Pennock\2019 Spring\Experiments\Data\4-25-2019\PACl Calibration\PACl_Calibration_2.xls"
+Path_PACl = r"C:\Users\William\Google Drive\AGUACLARA DRIVE\AguaClara Grads\William Pennock\2019 Spring\Experiments\Data\4-25-2019\PACl Calibration\PACl_Calibration_2.xls"
 PACl_Time = pro.column_of_time(Path_PACl,1)
 PACl_Balance = pro.column_of_data(Path_PACl,1,7)*u.g
 linreg = stats.linregress(PACl_Time,PACl_Balance)
 slope, int, r_value = linreg[0:3]
 Q_PACl_Cal = ((-slope*u.g/u.day)/pc.density_water(283.15*u.degK)).to(u.mL/u.min)
 mL_rev_P = (Q_PACl_Cal/(50*u.rpm)).to(u.mL/u.rev)
-mL_rev_P
+
 C_CP_range = C_range(Q,C_P,mL_rev_nom_P)
 C_CP_range.magnitude
 
@@ -394,9 +397,11 @@ linreg_B = stats.linregress(PACl_Time,PACl_Balance)
 slope_B, int_B, r_value_B = linreg_B[0:3]
 Q_Base_Cal = ((-slope_B*u.g/u.day)/pc.density_water(283.15*u.degK)).to(u.mL/u.min)
 mL_rev_B = (Q_Base_Cal/(50*u.rpm)).to(u.mL/u.rev)
-mL_rev_B
+(mL_rev_B*25*u.rpm).to(u.mL/u.min)
+Base_Water.to(u.mol/u.L )
 N_BS2 = Base_Water*Q/(rpm_target*mL_rev_B)
 N_BS2.to(u.eq/u.L)
+
 m_B2 = MW_NaOH*V_BS*N_BS2
 m_B2.to(u.g)
 ```
